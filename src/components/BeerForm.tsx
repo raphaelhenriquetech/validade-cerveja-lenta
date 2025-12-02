@@ -41,37 +41,41 @@ export function BeerForm({ onAdd }: BeerFormProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          Cadastrar Cerveja
+    <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-card to-secondary/20 pb-4">
+        <CardTitle className="flex items-center gap-3 text-lg">
+          <div className="p-2 rounded-xl bg-primary/10">
+            <Plus className="h-5 w-5 text-primary" />
+          </div>
+          Cadastrar Novo Lote
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome da Cerveja</Label>
+            <Label htmlFor="name" className="text-sm font-medium">Nome da Cerveja</Label>
             <Input
               id="name"
               placeholder="Ex: IPA Artesanal"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              className="h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lot">Lote</Label>
+            <Label htmlFor="lot" className="text-sm font-medium">Lote</Label>
             <Input
               id="lot"
               placeholder="Ex: L2024-001"
               value={lot}
               onChange={(e) => setLot(e.target.value)}
+              className="h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantidade</Label>
+            <Label htmlFor="quantity" className="text-sm font-medium">Quantidade</Label>
             <Input
               id="quantity"
               type="number"
@@ -79,21 +83,22 @@ export function BeerForm({ onAdd }: BeerFormProps) {
               placeholder="Ex: 24"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
+              className="h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Data de Validade</Label>
+            <Label className="text-sm font-medium">Data de Validade</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    'w-full justify-start text-left font-normal',
+                    'w-full h-11 justify-start text-left font-normal bg-background/50 border-border/50 hover:bg-background/80 transition-all',
                     !expirationDate && 'text-muted-foreground'
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
                   {expirationDate ? format(expirationDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione a data'}
                 </Button>
               </PopoverTrigger>
@@ -111,7 +116,11 @@ export function BeerForm({ onAdd }: BeerFormProps) {
           </div>
 
           <div className="flex items-end">
-            <Button type="submit" className="w-full">
+            <Button 
+              type="submit" 
+              className="w-full h-11 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md font-medium"
+            >
+              <Plus className="h-4 w-4 mr-2" />
               Cadastrar
             </Button>
           </div>
