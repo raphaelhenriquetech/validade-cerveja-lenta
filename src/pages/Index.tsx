@@ -9,6 +9,7 @@ import { Beer, Settings, Loader2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ReportGenerator } from '@/components/ReportGenerator';
+import Footer from '@/components/Footer';
 
 const Index = () => {
   const { batches, loading, addBatch, deleteBatch, updateBatch } = useBeers();
@@ -97,6 +98,7 @@ const Index = () => {
           />
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
