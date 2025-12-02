@@ -9,6 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Mail, Plus, Trash2, Send, Loader2, Settings as SettingsIcon } from 'lucide-react';
 import { ActivityHistory } from '@/components/ActivityHistory';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
+import { z } from 'zod';
+
+const emailSchema = z.object({
+  email: z.string()
+    .trim()
+    .email('Email inválido')
+    .max(255, 'Email muito longo')
+});
 
 interface EmailSetting {
   id: string;
@@ -50,21 +58,32 @@ const Settings = () => {
 
   const addEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail.trim()) return;
+    
+    const result = emailSchema.safeParse({ email: newEmail });
+    if (!result.success) {
+      toast({
+        title: 'Erro de validação',
+        description: result.error.errors[0].message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const validatedEmail = result.data.email;
 
     try {
       const { error } = await supabase
         .from('email_settings')
-        .insert({ email: newEmail.trim() });
+        .insert({ email: validatedEmail });
 
       if (error) throw error;
 
       toast({
         title: 'Email adicionado',
-        description: `${newEmail} foi cadastrado para receber relatórios`,
+        description: `${validatedEmail} foi cadastrado para receber relatórios`,
       });
 
-      await logActivity('email_added', 'email_setting', null, `Email adicionado: ${newEmail.trim()}`);
+      await logActivity('email_added', 'email_setting', null, `Email adicionado: ${validatedEmail}`);
       refetchLogs();
       setNewEmail('');
       fetchEmails();
