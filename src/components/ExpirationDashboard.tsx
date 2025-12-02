@@ -42,7 +42,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
   const cards = [
     {
       id: 'all',
-      label: 'Total',
+      title: 'Total',
+      subtitle: 'Todos os lotes',
       count: stats.total,
       icon: Package,
       gradient: 'from-primary/20 to-accent/20',
@@ -52,7 +53,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
     },
     {
       id: 'expired',
-      label: 'Vencidos',
+      title: 'Vencidos',
+      subtitle: 'Prazo expirado',
       count: stats.expired,
       icon: XCircle,
       gradient: 'from-destructive/20 to-destructive/10',
@@ -62,7 +64,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
     },
     {
       id: 'critical',
-      label: 'Crítico (≤7d)',
+      title: 'Crítico',
+      subtitle: 'Até 7 dias',
       count: stats.critical,
       icon: AlertTriangle,
       gradient: 'from-orange-500/20 to-orange-400/10',
@@ -72,7 +75,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
     },
     {
       id: '15days',
-      label: 'Atenção (8-15d)',
+      title: 'Atenção',
+      subtitle: '8 a 15 dias',
       count: stats.attention,
       icon: AlertCircle,
       gradient: 'from-yellow-500/20 to-yellow-400/10',
@@ -82,7 +86,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
     },
     {
       id: '30days',
-      label: 'Alerta (16-30d)',
+      title: 'Alerta',
+      subtitle: '16 a 30 dias',
       count: stats.alert,
       icon: Clock,
       gradient: 'from-blue-500/20 to-blue-400/10',
@@ -92,7 +97,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
     },
     {
       id: 'ok',
-      label: 'OK (31d+)',
+      title: 'OK',
+      subtitle: 'Mais de 30 dias',
       count: stats.ok,
       icon: CheckCircle,
       gradient: 'from-green-500/20 to-green-400/10',
@@ -131,8 +137,11 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
               <span className={cn('text-3xl font-bold tracking-tight', card.textClass)}>
                 {card.count}
               </span>
-              <span className="text-xs text-muted-foreground mt-1 font-medium">
-                {card.label}
+              <span className="text-xs font-semibold mt-1">
+                {card.title}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {card.subtitle}
               </span>
             </CardContent>
           </Card>
