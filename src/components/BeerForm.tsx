@@ -9,10 +9,9 @@ import { CalendarIcon, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 
 interface BeerFormProps {
-  onAdd: (name: string, batch: { lot: string; quantity: number; expirationDate: string }) => void;
+  onAdd: (beerName: string, lot: string, quantity: number, expirationDate: string) => void;
 }
 
 export function BeerForm({ onAdd }: BeerFormProps) {
@@ -25,21 +24,20 @@ export function BeerForm({ onAdd }: BeerFormProps) {
     e.preventDefault();
     
     if (!name.trim() || !lot.trim() || !quantity || !expirationDate) {
-      toast.error('Preencha todos os campos');
       return;
     }
 
-    onAdd(name.trim(), {
-      lot: lot.trim(),
-      quantity: parseInt(quantity),
-      expirationDate: expirationDate.toISOString()
-    });
+    onAdd(
+      name.trim(),
+      lot.trim(),
+      parseInt(quantity),
+      expirationDate.toISOString().split('T')[0]
+    );
 
     setName('');
     setLot('');
     setQuantity('');
     setExpirationDate(undefined);
-    toast.success('Cerveja cadastrada com sucesso!');
   };
 
   return (
