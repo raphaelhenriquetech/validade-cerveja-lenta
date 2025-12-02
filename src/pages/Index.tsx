@@ -4,12 +4,27 @@ import { BeerForm } from '@/components/BeerForm';
 import { BeerList } from '@/components/BeerList';
 import { ExpirationDashboard } from '@/components/ExpirationDashboard';
 import { useBeers } from '@/hooks/useBeers';
-import { Beer, Settings, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Beer, Settings, Loader2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { batches, loading, addBatch, deleteBatch } = useBeers();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
   const [filter, setFilter] = useState('all');
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: 'Erro ao sair',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -37,15 +52,25 @@ const Index = () => {
                 <p className="text-sm text-primary-foreground/80">Cerveja Lenta</p>
               </div>
             </div>
-            <Link to="/configuracoes">
+            <div className="flex items-center gap-2">
+              <Link to="/configuracoes">
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+                >
+                  <Settings className="h-5 w-5 text-primary-foreground" />
+                </Button>
+              </Link>
               <Button 
                 variant="secondary" 
                 size="icon" 
+                onClick={handleLogout}
                 className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
               >
-                <Settings className="h-5 w-5 text-primary-foreground" />
+                <LogOut className="h-5 w-5 text-primary-foreground" />
               </Button>
-            </Link>
+            </div>
           </div>
         </div>
       </header>
