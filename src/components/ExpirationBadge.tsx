@@ -1,6 +1,6 @@
 import { differenceInDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { AlertTriangle, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ExpirationBadgeProps {
@@ -16,17 +16,23 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
 
   if (daysUntilExpiration < 0) {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1">
-        <XCircle className="h-3 w-3" />
-        Vencido há {Math.abs(daysUntilExpiration)} dia{Math.abs(daysUntilExpiration) !== 1 ? 's' : ''}
+      <Badge 
+        variant="destructive" 
+        className="flex items-center gap-1.5 font-medium px-2.5 py-1 shadow-sm"
+      >
+        <XCircle className="h-3.5 w-3.5" />
+        Vencido ({Math.abs(daysUntilExpiration)}d)
       </Badge>
     );
   }
 
   if (daysUntilExpiration === 0) {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1">
-        <AlertTriangle className="h-3 w-3" />
+      <Badge 
+        variant="destructive" 
+        className="flex items-center gap-1.5 font-medium px-2.5 py-1 animate-pulse shadow-sm"
+      >
+        <AlertTriangle className="h-3.5 w-3.5" />
         Vence hoje!
       </Badge>
     );
@@ -34,44 +40,71 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
 
   if (daysUntilExpiration <= 7) {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1 animate-pulse">
-        <AlertTriangle className="h-3 w-3" />
-        CRÍTICO - {daysUntilExpiration} dia{daysUntilExpiration !== 1 ? 's' : ''}
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-gradient-to-r from-orange-500 to-orange-400",
+          "text-white border-0 shadow-sm animate-pulse"
+        )}
+      >
+        <AlertTriangle className="h-3.5 w-3.5" />
+        {daysUntilExpiration}d - Crítico
       </Badge>
     );
   }
 
   if (daysUntilExpiration <= 15) {
     return (
-      <Badge className={cn("flex items-center gap-1 bg-orange-500 hover:bg-orange-600")}>
-        <Clock className="h-3 w-3" />
-        Faltam {daysUntilExpiration} dias
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-gradient-to-r from-amber-500 to-yellow-400",
+          "text-amber-950 border-0 shadow-sm"
+        )}
+      >
+        <AlertCircle className="h-3.5 w-3.5" />
+        {daysUntilExpiration}d - Atenção
       </Badge>
     );
   }
 
   if (daysUntilExpiration <= 30) {
     return (
-      <Badge className={cn("flex items-center gap-1 bg-amber-500 hover:bg-amber-600")}>
-        <Clock className="h-3 w-3" />
-        Faltam {daysUntilExpiration} dias
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-gradient-to-r from-blue-500 to-blue-400",
+          "text-white border-0 shadow-sm"
+        )}
+      >
+        <Clock className="h-3.5 w-3.5" />
+        {daysUntilExpiration}d - Alerta
       </Badge>
     );
   }
 
   if (daysUntilExpiration <= 60) {
     return (
-      <Badge variant="secondary" className="flex items-center gap-1">
-        <Clock className="h-3 w-3" />
-        Faltam {daysUntilExpiration} dias
+      <Badge 
+        variant="secondary" 
+        className="flex items-center gap-1.5 font-medium px-2.5 py-1 shadow-sm"
+      >
+        <Clock className="h-3.5 w-3.5" />
+        {daysUntilExpiration}d
       </Badge>
     );
   }
 
   return (
-    <Badge variant="outline" className="flex items-center gap-1 border-primary text-primary">
-      <CheckCircle className="h-3 w-3" />
-      Faltam {daysUntilExpiration} dias
+    <Badge 
+      className={cn(
+        "flex items-center gap-1.5 font-medium px-2.5 py-1",
+        "bg-gradient-to-r from-emerald-500 to-green-400",
+        "text-white border-0 shadow-sm"
+      )}
+    >
+      <CheckCircle className="h-3.5 w-3.5" />
+      {daysUntilExpiration}d - OK
     </Badge>
   );
 }
