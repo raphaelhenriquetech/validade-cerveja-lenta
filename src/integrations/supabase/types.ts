@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      beer_batches: {
+        Row: {
+          beer_name: string
+          created_at: string | null
+          expiration_date: string
+          id: string
+          lot: string
+          quantity: number
+        }
+        Insert: {
+          beer_name: string
+          created_at?: string | null
+          expiration_date: string
+          id?: string
+          lot: string
+          quantity: number
+        }
+        Update: {
+          beer_name?: string
+          created_at?: string | null
+          expiration_date?: string
+          id?: string
+          lot?: string
+          quantity?: number
+        }
+        Relationships: []
+      }
+      email_settings: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
