@@ -1,0 +1,124 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Plus } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+interface BeerFormProps {
+  onAdd: (name: string, batch: { lot: string; quantity: number; expirationDate: string }) => void;
+}
+
+export function BeerForm({ onAdd }: BeerFormProps) {
+  const [name, setName] = useState('');
+  const [lot, setLot] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [expirationDate, setExpirationDate] = useState<Date>();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim() || !lot.trim() || !quantity || !expirationDate) {
+      toast.error('Preencha todos os campos');
+      return;
+    }
+
+    onAdd(name.trim(), {
+      lot: lot.trim(),
+      quantity: parseInt(quantity),
+      expirationDate: expirationDate.toISOString()
+    });
+
+    setName('');
+    setLot('');
+    setQuantity('');
+    setExpirationDate(undefined);
+    toast.success('Cerveja cadastrada com sucesso!');
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Plus className="h-5 w-5" />
+          Cadastrar Cerveja
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome da Cerveja</Label>
+            <Input
+              id="name"
+              placeholder="Ex: IPA Artesanal"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="lot">Lote</Label>
+            <Input
+              id="lot"
+              placeholder="Ex: L2024-001"
+              value={lot}
+              onChange={(e) => setLot(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="quantity">Quantidade</Label>
+            <Input
+              id="quantity"
+              type="number"
+              min="1"
+              placeholder="Ex: 24"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Data de Validade</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'w-full justify-start text-left font-normal',
+                    !expirationDate && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {expirationDate ? format(expirationDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione a data'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={expirationDate}
+                  onSelect={setExpirationDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                  locale={ptBR}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex items-end">
+            <Button type="submit" className="w-full">
+              Cadastrar
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
