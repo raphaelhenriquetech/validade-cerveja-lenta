@@ -95,6 +95,30 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_settings: {
+        Row: {
+          apikey: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          phone_number: string
+        }
+        Insert: {
+          apikey: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone_number: string
+        }
+        Update: {
+          apikey?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          phone_number?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -21,7 +21,11 @@ const emailSchema = z.object({
 const phoneSchema = z.object({
   phone: z.string()
     .trim()
-    .regex(/^\+?[1-9]\d{10,14}$/, 'Número inválido. Use formato: +5511999999999')
+    .regex(/^\+?[1-9]\d{10,14}$/, 'Número inválido. Use formato: +5511999999999'),
+  apikey: z.string()
+    .trim()
+    .min(1, 'API Key é obrigatória')
+    .max(50, 'API Key muito longa')
 });
 
 interface EmailSetting {
@@ -33,6 +37,7 @@ interface EmailSetting {
 interface WhatsAppSetting {
   id: string;
   phone_number: string;
+  apikey: string;
   is_active: boolean;
 }
 
@@ -43,7 +48,9 @@ const Settings = () => {
   const [sending, setSending] = useState(false);
   const [whatsappNumbers, setWhatsappNumbers] = useState<WhatsAppSetting[]>([]);
   const [newPhone, setNewPhone] = useState('');
+  const [newApiKey, setNewApiKey] = useState('');
   const [loadingWhatsapp, setLoadingWhatsapp] = useState(true);
+  const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
   const { toast } = useToast();
   const { logActivity, refetch: refetchLogs } = useActivityLogs();
 
@@ -191,7 +198,7 @@ const Settings = () => {
   const addPhone = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const result = phoneSchema.safeParse({ phone: newPhone });
+    const result = phoneSchema.safeParse({ phone: newPhone, apikey: newApiKey });
     if (!result.success) {
       toast({
         title: 'Erro de validação',
@@ -202,11 +209,12 @@ const Settings = () => {
     }
 
     const validatedPhone = result.data.phone;
+    const validatedApiKey = result.data.apikey;
 
     try {
       const { error } = await supabase
         .from('whatsapp_settings' as any)
-        .insert({ phone_number: validatedPhone });
+        .insert({ phone_number: validatedPhone, apikey: validatedApiKey });
 
       if (error) throw error;
 
@@ -218,6 +226,7 @@ const Settings = () => {
       await logActivity('whatsapp_added', 'whatsapp_setting', null, `WhatsApp adicionado: ${validatedPhone}`);
       refetchLogs();
       setNewPhone('');
+      setNewApiKey('');
       fetchWhatsappNumbers();
     } catch (error: any) {
       toast({
@@ -225,6 +234,36 @@ const Settings = () => {
         description: error.message,
         variant: 'destructive',
       });
+    }
+  };
+
+  const sendWhatsAppReport = async () => {
+    setSendingWhatsapp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-whatsapp-report');
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: 'WhatsApp enviado!',
+          description: data.message,
+        });
+      } else {
+        toast({
+          title: 'Aviso',
+          description: data.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao enviar WhatsApp',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSendingWhatsapp(false);
     }
   };
 
@@ -363,19 +402,29 @@ const Settings = () => {
               <div className="p-2 rounded-xl bg-green-500/10">
                 <MessageCircle className="h-5 w-5 text-green-600" />
               </div>
-              WhatsApp para Relatório
+              WhatsApp para Relatório (CallMeBot)
             </CardTitle>
             <CardDescription>
-              Cadastre os números que receberão o relatório via WhatsApp (em breve)
+              Cadastre os números que receberão o relatório via WhatsApp. 
+              <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                Como obter a API Key
+              </a>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
-            <form onSubmit={addPhone} className="flex gap-3">
+            <form onSubmit={addPhone} className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="tel"
                 placeholder="+5511999999999"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
+                className="flex-1 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+              />
+              <Input
+                type="text"
+                placeholder="API Key do CallMeBot"
+                value={newApiKey}
+                onChange={(e) => setNewApiKey(e.target.value)}
                 className="flex-1 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
               />
               <Button 
@@ -441,25 +490,39 @@ const Settings = () => {
               Envio Manual
             </CardTitle>
             <CardDescription>
-              Envie um relatório de teste para os emails cadastrados
+              Envie um relatório de teste para os emails ou WhatsApp cadastrados
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-6">
-            <Button 
-              onClick={sendTestReport} 
-              disabled={sending || emails.length === 0}
-              className="h-12 px-8 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md font-medium"
-            >
-              {sending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4 mr-2" />
-              )}
-              {sending ? 'Enviando...' : 'Enviar Relatório Agora'}
-            </Button>
-            {emails.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-3">
-                Adicione pelo menos um email para enviar o relatório.
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                onClick={sendTestReport} 
+                disabled={sending || emails.length === 0}
+                className="h-12 px-8 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md font-medium"
+              >
+                {sending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Mail className="h-4 w-4 mr-2" />
+                )}
+                {sending ? 'Enviando...' : 'Enviar Email'}
+              </Button>
+              <Button 
+                onClick={sendWhatsAppReport} 
+                disabled={sendingWhatsapp || whatsappNumbers.length === 0}
+                className="h-12 px-8 bg-gradient-to-r from-green-600 to-green-500 hover:opacity-90 transition-all shadow-md font-medium"
+              >
+                {sendingWhatsapp ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                )}
+                {sendingWhatsapp ? 'Enviando...' : 'Enviar WhatsApp'}
+              </Button>
+            </div>
+            {emails.length === 0 && whatsappNumbers.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Adicione pelo menos um email ou número de WhatsApp para enviar o relatório.
               </p>
             )}
           </CardContent>
