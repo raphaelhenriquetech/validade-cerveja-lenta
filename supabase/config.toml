@@ -2,3 +2,6 @@ project_id = "lwhqguoczgutntjahypu"
 
 [functions.send-expiration-report]
 verify_jwt = true
+
+[functions.send-whatsapp-report]
+verify_jwt = true
