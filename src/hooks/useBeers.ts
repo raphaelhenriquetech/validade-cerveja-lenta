@@ -1,75 +1,123 @@
-import { useState, useEffect } from 'react';
-import { Beer, BeerBatch } from '@/types/beer';
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-const STORAGE_KEY = 'cerveja-lenta-beers';
+export interface BeerBatch {
+  id: string;
+  beer_name: string;
+  lot: string;
+  quantity: number;
+  expiration_date: string;
+}
 
 export function useBeers() {
-  const [beers, setBeers] = useState<Beer[]>([]);
+  const [batches, setBatches] = useState<BeerBatch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchBatches = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('beer_batches')
+        .select('*')
+        .order('expiration_date', { ascending: true });
+
+      if (error) throw error;
+      setBatches(data || []);
+    } catch (error: any) {
+      console.error('Error fetching batches:', error);
+      toast({
+        title: 'Erro ao carregar lotes',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setBeers(JSON.parse(stored));
-    }
-  }, []);
+    fetchBatches();
+  }, [fetchBatches]);
 
-  const saveBeers = (newBeers: Beer[]) => {
-    setBeers(newBeers);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newBeers));
-  };
+  const addBatch = async (beerName: string, lot: string, quantity: number, expirationDate: string) => {
+    try {
+      const { error } = await supabase
+        .from('beer_batches')
+        .insert({
+          beer_name: beerName,
+          lot,
+          quantity,
+          expiration_date: expirationDate,
+        });
 
-  const addBeer = (name: string, batch: Omit<BeerBatch, 'id'>) => {
-    const existingBeer = beers.find(b => b.name.toLowerCase() === name.toLowerCase());
-    
-    if (existingBeer) {
-      const updatedBeers = beers.map(beer => {
-        if (beer.id === existingBeer.id) {
-          return {
-            ...beer,
-            batches: [...beer.batches, { ...batch, id: crypto.randomUUID() }]
-          };
-        }
-        return beer;
+      if (error) throw error;
+
+      toast({
+        title: 'Lote adicionado',
+        description: `${beerName} - Lote ${lot}`,
       });
-      saveBeers(updatedBeers);
-    } else {
-      const newBeer: Beer = {
-        id: crypto.randomUUID(),
-        name,
-        batches: [{ ...batch, id: crypto.randomUUID() }]
-      };
-      saveBeers([...beers, newBeer]);
+
+      fetchBatches();
+    } catch (error: any) {
+      console.error('Error adding batch:', error);
+      toast({
+        title: 'Erro ao adicionar lote',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
-  const deleteBatch = (beerId: string, batchId: string) => {
-    const updatedBeers = beers.map(beer => {
-      if (beer.id === beerId) {
-        return {
-          ...beer,
-          batches: beer.batches.filter(b => b.id !== batchId)
-        };
-      }
-      return beer;
-    }).filter(beer => beer.batches.length > 0);
-    
-    saveBeers(updatedBeers);
+  const deleteBatch = async (batchId: string) => {
+    try {
+      const { error } = await supabase
+        .from('beer_batches')
+        .delete()
+        .eq('id', batchId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Lote excluído',
+        description: 'O lote foi removido com sucesso',
+      });
+
+      fetchBatches();
+    } catch (error: any) {
+      console.error('Error deleting batch:', error);
+      toast({
+        title: 'Erro ao excluir lote',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  const updateBatch = (beerId: string, batchId: string, updates: Partial<BeerBatch>) => {
-    const updatedBeers = beers.map(beer => {
-      if (beer.id === beerId) {
-        return {
-          ...beer,
-          batches: beer.batches.map(batch => 
-            batch.id === batchId ? { ...batch, ...updates } : batch
-          )
-        };
-      }
-      return beer;
-    });
-    saveBeers(updatedBeers);
+  const updateBatch = async (batchId: string, updates: Partial<BeerBatch>) => {
+    try {
+      const { error } = await supabase
+        .from('beer_batches')
+        .update(updates)
+        .eq('id', batchId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Lote atualizado',
+        description: 'As alterações foram salvas',
+      });
+
+      fetchBatches();
+    } catch (error: any) {
+      console.error('Error updating batch:', error);
+      toast({
+        title: 'Erro ao atualizar lote',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  return { beers, addBeer, deleteBatch, updateBatch };
+  return { batches, loading, addBatch, deleteBatch, updateBatch, refetch: fetchBatches };
 }
