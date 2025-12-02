@@ -5,7 +5,7 @@ import { BeerList } from '@/components/BeerList';
 import { ExpirationDashboard } from '@/components/ExpirationDashboard';
 import { useBeers } from '@/hooks/useBeers';
 import { useAuth } from '@/hooks/useAuth';
-import { Beer, Settings, Loader2, LogOut } from 'lucide-react';
+import { Beer, Settings, Loader2, LogOut, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ReportGenerator } from '@/components/ReportGenerator';
@@ -56,6 +56,16 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2">
               <ReportGenerator batches={batches} />
+              <Link to="/produtos-tiny">
+                <Button 
+                  variant="secondary" 
+                  size="icon" 
+                  className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+                  title="Produtos Tiny"
+                >
+                  <Package className="h-5 w-5 text-primary-foreground" />
+                </Button>
+              </Link>
               <Link to="/configuracoes">
                 <Button 
                   variant="secondary" 
