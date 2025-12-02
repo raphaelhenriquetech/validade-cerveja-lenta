@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const { batches, loading, addBatch, deleteBatch } = useBeers();
+  const { batches, loading, addBatch, deleteBatch, updateBatch } = useBeers();
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState('all');
@@ -87,7 +87,12 @@ const Index = () => {
           <BeerForm onAdd={addBatch} />
         </div>
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
-          <BeerList batches={batches} onDeleteBatch={deleteBatch} filter={filter} />
+          <BeerList 
+            batches={batches} 
+            onDeleteBatch={deleteBatch} 
+            onUpdateBatch={updateBatch}
+            filter={filter} 
+          />
         </div>
       </main>
     </div>

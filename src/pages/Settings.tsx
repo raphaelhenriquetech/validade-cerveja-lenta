@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Mail, Plus, Trash2, Send, Loader2, Settings as SettingsIcon } from 'lucide-react';
+import { ActivityHistory } from '@/components/ActivityHistory';
+import { useActivityLogs } from '@/hooks/useActivityLogs';
 
 interface EmailSetting {
   id: string;
@@ -20,6 +22,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const { toast } = useToast();
+  const { logActivity, refetch: refetchLogs } = useActivityLogs();
 
   const fetchEmails = async () => {
     try {
@@ -61,6 +64,8 @@ const Settings = () => {
         description: `${newEmail} foi cadastrado para receber relatórios`,
       });
 
+      await logActivity('email_added', 'email_setting', null, `Email adicionado: ${newEmail.trim()}`);
+      refetchLogs();
       setNewEmail('');
       fetchEmails();
     } catch (error: any) {
@@ -72,7 +77,7 @@ const Settings = () => {
     }
   };
 
-  const deleteEmail = async (id: string) => {
+  const deleteEmail = async (id: string, email: string) => {
     try {
       const { error } = await supabase
         .from('email_settings')
@@ -86,6 +91,8 @@ const Settings = () => {
         description: 'O email foi removido da lista de destinatários',
       });
 
+      await logActivity('email_deleted', 'email_setting', id, `Email removido: ${email}`);
+      refetchLogs();
       fetchEmails();
     } catch (error: any) {
       toast({
@@ -213,7 +220,7 @@ const Settings = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => deleteEmail(email.id)}
+                            onClick={() => deleteEmail(email.id, email.email)}
                             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -261,6 +268,9 @@ const Settings = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Activity History */}
+        <ActivityHistory />
       </main>
     </div>
   );

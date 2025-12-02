@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          description: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          description: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          description?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Relationships: []
+      }
       beer_batches: {
         Row: {
           beer_name: string

@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,16 +18,32 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { BeerBatch } from '@/hooks/useBeers';
 import { cn } from '@/lib/utils';
 
 interface BeerListProps {
   batches: BeerBatch[];
-  onDeleteBatch: (batchId: string) => void;
+  onDeleteBatch: (batchId: string, batchInfo?: { beer_name: string; lot: string }) => void;
+  onUpdateBatch: (batchId: string, updates: Partial<BeerBatch>, oldBatch?: BeerBatch) => void;
   filter: string;
 }
 
-export function BeerList({ batches, onDeleteBatch, filter }: BeerListProps) {
+export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: BeerListProps) {
+  const [editingBatch, setEditingBatch] = useState<BeerBatch | null>(null);
+  const [editQuantity, setEditQuantity] = useState('');
+  const [editBeerName, setEditBeerName] = useState('');
+  const [editExpirationDate, setEditExpirationDate] = useState('');
+
   const filteredBatches = useMemo(() => {
     return batches.filter(batch => {
       const days = getDaysUntilExpiration(batch.expiration_date);
@@ -115,7 +131,7 @@ export function BeerList({ batches, onDeleteBatch, filter }: BeerListProps) {
                   <TableHead className="text-center font-semibold">Qtd</TableHead>
                   <TableHead className="font-semibold">Validade</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
+                  <TableHead className="w-[100px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -159,35 +175,50 @@ export function BeerList({ batches, onDeleteBatch, filter }: BeerListProps) {
                           <ExpirationBadge expirationDate={batch.expiration_date} />
                         </TableCell>
                         <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{beerName}"?
-                                  Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => onDeleteBatch(batch.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                              onClick={() => {
+                                setEditingBatch(batch);
+                                setEditQuantity(batch.quantity.toString());
+                                setEditBeerName(batch.beer_name);
+                                setEditExpirationDate(batch.expiration_date);
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                 >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{beerName}"?
+                                    Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => onDeleteBatch(batch.id, { beer_name: batch.beer_name, lot: batch.lot })}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -198,6 +229,74 @@ export function BeerList({ batches, onDeleteBatch, filter }: BeerListProps) {
           </div>
         )}
       </CardContent>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingBatch} onOpenChange={(open) => !open && setEditingBatch(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Lote</DialogTitle>
+            <DialogDescription>
+              Altere as informações do lote {editingBatch?.lot}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="beer_name">Nome da Cerveja</Label>
+              <Input
+                id="beer_name"
+                value={editBeerName}
+                onChange={(e) => setEditBeerName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantidade</Label>
+              <Input
+                id="quantity"
+                type="number"
+                min="1"
+                value={editQuantity}
+                onChange={(e) => setEditQuantity(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expiration_date">Data de Validade</Label>
+              <Input
+                id="expiration_date"
+                type="date"
+                value={editExpirationDate}
+                onChange={(e) => setEditExpirationDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingBatch(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (editingBatch) {
+                  const updates: Partial<BeerBatch> = {};
+                  if (editQuantity && parseInt(editQuantity) !== editingBatch.quantity) {
+                    updates.quantity = parseInt(editQuantity);
+                  }
+                  if (editBeerName && editBeerName !== editingBatch.beer_name) {
+                    updates.beer_name = editBeerName;
+                  }
+                  if (editExpirationDate && editExpirationDate !== editingBatch.expiration_date) {
+                    updates.expiration_date = editExpirationDate;
+                  }
+                  if (Object.keys(updates).length > 0) {
+                    onUpdateBatch(editingBatch.id, updates, editingBatch);
+                  }
+                  setEditingBatch(null);
+                }
+              }}
+            >
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
