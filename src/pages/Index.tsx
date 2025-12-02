@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Beer, Settings, Loader2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { ReportGenerator } from '@/components/ReportGenerator';
 
 const Index = () => {
   const { batches, loading, addBatch, deleteBatch, updateBatch } = useBeers();
@@ -53,6 +54,7 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <ReportGenerator batches={batches} />
               <Link to="/configuracoes">
                 <Button 
                   variant="secondary" 
