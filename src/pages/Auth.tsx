@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Beer, Loader2, Mail, Lock } from 'lucide-react';
+import Footer from '@/components/Footer';
 
 const authSchema = z.object({
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
@@ -173,6 +174,7 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+      <Footer />
     </div>
   );
 };

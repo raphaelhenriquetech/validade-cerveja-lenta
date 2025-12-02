@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Mail, Plus, Trash2, Send, Loader2, Settings as SettingsIcon, MessageCircle } from 'lucide-react';
 import { ActivityHistory } from '@/components/ActivityHistory';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
+import Footer from '@/components/Footer';
 import { z } from 'zod';
 
 const emailSchema = z.object({
@@ -531,6 +532,7 @@ const Settings = () => {
         {/* Activity History */}
         <ActivityHistory />
       </main>
+      <Footer />
     </div>
   );
 };
