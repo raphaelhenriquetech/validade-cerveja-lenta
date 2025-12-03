@@ -46,9 +46,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Todos os lotes',
       count: stats.total,
       icon: Package,
-      gradient: 'from-primary/20 to-accent/20',
-      iconBg: 'bg-primary/20',
-      textClass: 'text-primary',
+      bgColor: 'bg-[hsl(264,80%,55%)]',
+      hoverBg: 'hover:bg-[hsl(264,80%,50%)]',
       isPulse: false,
     },
     {
@@ -57,9 +56,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Prazo expirado',
       count: stats.expired,
       icon: XCircle,
-      gradient: 'from-destructive/20 to-destructive/10',
-      iconBg: 'bg-destructive/20',
-      textClass: 'text-destructive',
+      bgColor: 'bg-[hsl(0,85%,60%)]',
+      hoverBg: 'hover:bg-[hsl(0,85%,55%)]',
       isPulse: stats.expired > 0,
     },
     {
@@ -68,9 +66,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Até 7 dias',
       count: stats.critical,
       icon: AlertTriangle,
-      gradient: 'from-orange-500/20 to-orange-400/10',
-      iconBg: 'bg-orange-500/20',
-      textClass: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-[hsl(35,95%,55%)]',
+      hoverBg: 'hover:bg-[hsl(35,95%,50%)]',
       isPulse: stats.critical > 0,
     },
     {
@@ -79,9 +76,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: '8 a 15 dias',
       count: stats.attention,
       icon: AlertCircle,
-      gradient: 'from-yellow-500/20 to-yellow-400/10',
-      iconBg: 'bg-yellow-500/20',
-      textClass: 'text-yellow-600 dark:text-yellow-400',
+      bgColor: 'bg-[hsl(45,100%,50%)]',
+      hoverBg: 'hover:bg-[hsl(45,100%,45%)]',
       isPulse: false,
     },
     {
@@ -90,9 +86,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: '16 a 30 dias',
       count: stats.alert,
       icon: Clock,
-      gradient: 'from-blue-500/20 to-blue-400/10',
-      iconBg: 'bg-blue-500/20',
-      textClass: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-[hsl(195,100%,50%)]',
+      hoverBg: 'hover:bg-[hsl(195,100%,45%)]',
       isPulse: false,
     },
     {
@@ -101,9 +96,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Mais de 30 dias',
       count: stats.ok,
       icon: CheckCircle,
-      gradient: 'from-green-500/20 to-green-400/10',
-      iconBg: 'bg-green-500/20',
-      textClass: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-[hsl(160,84%,45%)]',
+      hoverBg: 'hover:bg-[hsl(160,84%,40%)]',
       isPulse: false,
     },
   ];
@@ -118,29 +112,26 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
           <Card
             key={card.id}
             className={cn(
-              'cursor-pointer transition-all duration-300 overflow-hidden group',
-              'bg-gradient-to-br border-0 shadow-custom-sm hover:shadow-custom-md',
-              card.gradient,
-              isActive && 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-glow',
+              'cursor-pointer transition-all duration-200 border-0 overflow-hidden group hover-lift',
+              card.bgColor,
+              card.hoverBg,
+              isActive && 'ring-4 ring-foreground/20 ring-offset-2 ring-offset-background scale-[1.02]',
               card.isPulse && 'pulse-glow'
             )}
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => onFilterChange(isActive ? 'all' : card.id)}
           >
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center relative">
-              <div className={cn(
-                'p-2 rounded-xl mb-2 transition-transform duration-300 group-hover:scale-110',
-                card.iconBg
-              )}>
-                <Icon className={cn('h-5 w-5', card.textClass)} />
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center relative text-white">
+              <div className="absolute top-2 right-2 opacity-20">
+                <Icon className="h-8 w-8" />
               </div>
-              <span className={cn('text-3xl font-bold tracking-tight', card.textClass)}>
+              <span className="text-4xl font-bold tracking-tight drop-shadow-sm">
                 {card.count}
               </span>
-              <span className="text-xs font-semibold mt-1">
+              <span className="text-sm font-semibold mt-1 drop-shadow-sm">
                 {card.title}
               </span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] opacity-80">
                 {card.subtitle}
               </span>
             </CardContent>

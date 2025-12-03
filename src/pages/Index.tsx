@@ -41,65 +41,65 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with gradient */}
-      <header className="bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
-        <div className="container py-6">
+      {/* Modern Header - Light with colored accents */}
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="container py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 shadow-xl">
-                <Beer className="h-8 w-8 text-primary-foreground" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+                <Beer className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Controle de Validades</h1>
-                <p className="text-sm text-primary-foreground/80">Cerveja Lenta</p>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">Controle de Validades</h1>
+                <p className="text-sm text-muted-foreground">Cerveja Lenta</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ReportGenerator batches={batches} />
               <Link to="/produtos-tiny">
                 <Button 
-                  variant="secondary" 
+                  variant="ghost" 
                   size="icon" 
-                  className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                   title="Produtos Tiny"
                 >
-                  <Package className="h-5 w-5 text-primary-foreground" />
+                  <Package className="h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/configuracoes">
                 <Button 
-                  variant="secondary" 
+                  variant="ghost" 
                   size="icon" 
-                  className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                 >
-                  <Settings className="h-5 w-5 text-primary-foreground" />
+                  <Settings className="h-5 w-5" />
                 </Button>
               </Link>
               <Button 
-                variant="secondary" 
+                variant="ghost" 
                 size="icon" 
                 onClick={handleLogout}
-                className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
               >
-                <LogOut className="h-5 w-5 text-primary-foreground" />
+                <LogOut className="h-5 w-5" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container py-6 space-y-6">
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <main className="container py-6 space-y-6 pb-20">
+        <div className="animate-fade-in">
           <ExpirationDashboard 
             batches={batches} 
             onFilterChange={setFilter} 
             activeFilter={filter} 
           />
         </div>
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+        <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
           <BeerForm onAdd={addBatch} />
         </div>
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+        <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
           <BeerList 
             batches={batches} 
             onDeleteBatch={deleteBatch} 

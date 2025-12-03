@@ -93,50 +93,54 @@ const TinyProducts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-16">
-      {/* Header */}
-      <header className="bg-primary text-primary-foreground shadow-lg">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary/80">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-3">
-                <Package className="h-8 w-8" />
-                <div>
-                  <h1 className="text-xl font-bold">Produtos Olist Tiny</h1>
-                  <p className="text-sm text-primary-foreground/80">Consulta de produtos do ERP</p>
-                </div>
-              </div>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Modern Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="container py-4">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+              <Package className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Produtos Olist Tiny</h1>
+              <p className="text-sm text-muted-foreground">Consulta de produtos do ERP</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
+      <main className="container py-6 space-y-6">
         {/* Search Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
+        <Card className="border border-border/50 shadow-sm animate-fade-in">
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Search className="h-5 w-5 text-primary" />
+              </div>
               Buscar Produtos
             </CardTitle>
             <CardDescription>
               Pesquise por nome, código ou SKU dos produtos cadastrados no Tiny ERP
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <form onSubmit={handleSearch} className="flex gap-3">
               <Input
                 placeholder="Digite o nome ou código do produto..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1"
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
               />
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="h-11 px-6 bg-primary hover:bg-primary/90 shadow-md">
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -149,6 +153,7 @@ const TinyProducts = () => {
                 variant="outline"
                 onClick={() => fetchProducts(currentPage, searchTerm)}
                 disabled={loading}
+                className="h-11"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </Button>
@@ -157,8 +162,8 @@ const TinyProducts = () => {
         </Card>
 
         {/* Results Card */}
-        <Card>
-          <CardHeader>
+        <Card className="border border-border/50 shadow-sm animate-fade-in" style={{ animationDelay: '100ms' }}>
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
             <CardTitle>Resultados</CardTitle>
             {hasSearched && (
               <CardDescription>
@@ -166,45 +171,58 @@ const TinyProducts = () => {
               </CardDescription>
             )}
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {!hasSearched ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Clique em "Buscar" para carregar os produtos do Tiny ERP</p>
+              <div className="text-center py-16">
+                <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
+                  <Package className="h-10 w-10 text-muted-foreground/50" />
+                </div>
+                <p className="text-muted-foreground font-medium">Clique em "Buscar" para carregar os produtos do Tiny ERP</p>
               </div>
             ) : loading ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhum produto encontrado</p>
+              <div className="text-center py-16">
+                <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
+                  <Package className="h-10 w-10 text-muted-foreground/50" />
+                </div>
+                <p className="text-muted-foreground font-medium">Nenhum produto encontrado</p>
               </div>
             ) : (
               <>
-                <div className="rounded-md border overflow-hidden">
+                <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Código</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead className="text-right">Preço Custo</TableHead>
-                        <TableHead className="text-right">Preço Venda</TableHead>
-                        <TableHead className="text-center">Unidade</TableHead>
-                        <TableHead className="text-center">Situação</TableHead>
+                      <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                        <TableHead className="font-semibold text-foreground">Código</TableHead>
+                        <TableHead className="font-semibold text-foreground">Nome</TableHead>
+                        <TableHead className="text-right font-semibold text-foreground">Preço Custo</TableHead>
+                        <TableHead className="text-right font-semibold text-foreground">Preço Venda</TableHead>
+                        <TableHead className="text-center font-semibold text-foreground">Unidade</TableHead>
+                        <TableHead className="text-center font-semibold text-foreground">Situação</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {products.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell className="font-mono text-sm">{product.codigo}</TableCell>
+                        <TableRow key={product.id} className="hover:bg-secondary/30 transition-colors">
+                          <TableCell>
+                            <code className="px-2 py-1 rounded-md bg-secondary text-sm font-mono">
+                              {product.codigo}
+                            </code>
+                          </TableCell>
                           <TableCell className="font-medium">{product.nome}</TableCell>
                           <TableCell className="text-right">{formatPrice(product.preco_custo)}</TableCell>
-                          <TableCell className="text-right">{formatPrice(product.preco)}</TableCell>
+                          <TableCell className="text-right font-semibold">{formatPrice(product.preco)}</TableCell>
                           <TableCell className="text-center">{product.unidade || '-'}</TableCell>
                           <TableCell className="text-center">
-                            <Badge variant={product.situacao === 'A' ? 'default' : 'secondary'}>
+                            <Badge 
+                              className={product.situacao === 'A' 
+                                ? 'bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)] text-white' 
+                                : 'bg-secondary text-secondary-foreground'
+                              }
+                            >
                               {product.situacao === 'A' ? 'Ativo' : 'Inativo'}
                             </Badge>
                           </TableCell>
@@ -216,7 +234,7 @@ const TinyProducts = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-4">
+                  <div className="flex items-center justify-between p-4 border-t border-border/50">
                     <p className="text-sm text-muted-foreground">
                       Mostrando página {currentPage} de {totalPages}
                     </p>
