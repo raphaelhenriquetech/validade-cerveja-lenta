@@ -125,13 +125,13 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
               <div className="absolute top-2 right-2 opacity-20">
                 <Icon className="h-8 w-8" />
               </div>
-              <span className="text-4xl font-bold tracking-tight drop-shadow-sm">
+              <span className="text-4xl font-bold tracking-tight drop-shadow-md">
                 {card.count}
               </span>
-              <span className="text-sm font-semibold mt-1 drop-shadow-sm">
+              <span className="text-sm font-bold mt-1 drop-shadow-md">
                 {card.title}
               </span>
-              <span className="text-[11px] opacity-80">
+              <span className="text-xs font-semibold drop-shadow-sm">
                 {card.subtitle}
               </span>
             </CardContent>
