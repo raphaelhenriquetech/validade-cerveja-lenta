@@ -41,8 +41,8 @@ export function BeerForm({ onAdd }: BeerFormProps) {
   };
 
   return (
-    <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-card to-secondary/20 pb-4">
+    <Card className="border border-border/50 shadow-sm">
+      <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-3 text-lg">
           <div className="p-2 rounded-xl bg-primary/10">
             <Plus className="h-5 w-5 text-primary" />
@@ -50,32 +50,32 @@ export function BeerForm({ onAdd }: BeerFormProps) {
           Cadastrar Novo Lote
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">Nome da Cerveja</Label>
+            <Label htmlFor="name" className="text-sm font-medium text-muted-foreground">Nome da Cerveja</Label>
             <Input
               id="name"
               placeholder="Ex: IPA Artesanal"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+              className="h-11 border-border/60 focus:border-primary focus:ring-primary/20 transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lot" className="text-sm font-medium">Lote</Label>
+            <Label htmlFor="lot" className="text-sm font-medium text-muted-foreground">Lote</Label>
             <Input
               id="lot"
               placeholder="Ex: L2024-001"
               value={lot}
               onChange={(e) => setLot(e.target.value)}
-              className="h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+              className="h-11 border-border/60 focus:border-primary focus:ring-primary/20 transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity" className="text-sm font-medium">Quantidade</Label>
+            <Label htmlFor="quantity" className="text-sm font-medium text-muted-foreground">Quantidade</Label>
             <Input
               id="quantity"
               type="number"
@@ -83,18 +83,18 @@ export function BeerForm({ onAdd }: BeerFormProps) {
               placeholder="Ex: 24"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+              className="h-11 border-border/60 focus:border-primary focus:ring-primary/20 transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Data de Validade</Label>
+            <Label className="text-sm font-medium text-muted-foreground">Data de Validade</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    'w-full h-11 justify-start text-left font-normal bg-background/50 border-border/50 hover:bg-background/80 transition-all',
+                    'w-full h-11 justify-start text-left font-normal border-border/60 hover:bg-secondary/50 transition-all',
                     !expirationDate && 'text-muted-foreground'
                   )}
                 >
@@ -118,7 +118,7 @@ export function BeerForm({ onAdd }: BeerFormProps) {
           <div className="flex items-end">
             <Button 
               type="submit" 
-              className="w-full h-11 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md font-medium"
+              className="w-full h-11 bg-primary hover:bg-primary/90 transition-all shadow-md font-medium"
             >
               <Plus className="h-4 w-4 mr-2" />
               Cadastrar

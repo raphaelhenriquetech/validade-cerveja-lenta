@@ -296,34 +296,34 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with gradient */}
-      <header className="bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
-        <div className="container py-6">
+      {/* Modern Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="container py-4">
           <div className="flex items-center gap-4">
             <Link to="/">
               <Button 
-                variant="secondary" 
+                variant="ghost" 
                 size="icon" 
-                className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
               >
-                <ArrowLeft className="h-5 w-5 text-primary-foreground" />
+                <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/20 shadow-xl">
-              <SettingsIcon className="h-8 w-8 text-primary-foreground" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+              <SettingsIcon className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
-              <p className="text-sm text-primary-foreground/80">Gerenciar emails e WhatsApp para relatórios</p>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Configurações</h1>
+              <p className="text-sm text-muted-foreground">Gerenciar emails e WhatsApp para relatórios</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container py-6 space-y-6">
+      <main className="container py-6 space-y-6 pb-20">
         {/* Email Recipients Card */}
-        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <CardHeader className="bg-gradient-to-r from-card to-secondary/20">
+        <Card className="border border-border/50 shadow-sm animate-fade-in">
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
             <CardTitle className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-primary/10">
                 <Mail className="h-5 w-5 text-primary" />
@@ -341,11 +341,11 @@ const Settings = () => {
                 placeholder="Digite o email..."
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                className="flex-1 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
               />
               <Button 
                 type="submit"
-                className="h-11 px-6 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md"
+                className="h-11 px-6 bg-primary hover:bg-primary/90 transition-all shadow-md"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar
@@ -358,7 +358,7 @@ const Settings = () => {
               </div>
             ) : emails.length === 0 ? (
               <div className="text-center py-12">
-                <div className="p-4 rounded-full bg-secondary/50 w-fit mx-auto mb-4">
+                <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
                   <Mail className="h-8 w-8 text-muted-foreground/50" />
                 </div>
                 <p className="text-muted-foreground font-medium">Nenhum email cadastrado</p>
@@ -368,14 +368,14 @@ const Settings = () => {
               <div className="rounded-xl border border-border/50 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-secondary/30 hover:bg-secondary/30">
-                      <TableHead className="font-semibold">Email</TableHead>
+                    <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                      <TableHead className="font-semibold text-foreground">Email</TableHead>
                       <TableHead className="w-[100px]">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {emails.map((email) => (
-                      <TableRow key={email.id} className="hover:bg-secondary/20 transition-colors">
+                      <TableRow key={email.id} className="hover:bg-secondary/30 transition-colors">
                         <TableCell className="font-medium">{email.email}</TableCell>
                         <TableCell>
                           <Button
@@ -397,11 +397,11 @@ const Settings = () => {
         </Card>
 
         {/* WhatsApp Recipients Card */}
-        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75">
-          <CardHeader className="bg-gradient-to-r from-card to-secondary/20">
+        <Card className="border border-border/50 shadow-sm animate-fade-in" style={{ animationDelay: '100ms' }}>
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-green-500/10">
-                <MessageCircle className="h-5 w-5 text-green-600" />
+              <div className="p-2 rounded-xl bg-[hsl(160,84%,45%)]/10">
+                <MessageCircle className="h-5 w-5 text-[hsl(160,84%,45%)]" />
               </div>
               WhatsApp para Relatório (CallMeBot)
             </CardTitle>
@@ -419,18 +419,18 @@ const Settings = () => {
                 placeholder="+5511999999999"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                className="flex-1 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
               />
               <Input
                 type="text"
                 placeholder="API Key do CallMeBot"
                 value={newApiKey}
                 onChange={(e) => setNewApiKey(e.target.value)}
-                className="flex-1 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
               />
               <Button 
                 type="submit"
-                className="h-11 px-6 bg-gradient-to-r from-green-600 to-green-500 hover:opacity-90 transition-all shadow-md"
+                className="h-11 px-6 bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)] transition-all shadow-md"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar
@@ -439,11 +439,11 @@ const Settings = () => {
 
             {loadingWhatsapp ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-[hsl(160,84%,45%)]" />
               </div>
             ) : whatsappNumbers.length === 0 ? (
               <div className="text-center py-12">
-                <div className="p-4 rounded-full bg-secondary/50 w-fit mx-auto mb-4">
+                <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
                   <MessageCircle className="h-8 w-8 text-muted-foreground/50" />
                 </div>
                 <p className="text-muted-foreground font-medium">Nenhum número cadastrado</p>
@@ -453,14 +453,14 @@ const Settings = () => {
               <div className="rounded-xl border border-border/50 overflow-hidden">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-secondary/30 hover:bg-secondary/30">
-                      <TableHead className="font-semibold">Número</TableHead>
+                    <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                      <TableHead className="font-semibold text-foreground">Número</TableHead>
                       <TableHead className="w-[100px]">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {whatsappNumbers.map((item) => (
-                      <TableRow key={item.id} className="hover:bg-secondary/20 transition-colors">
+                      <TableRow key={item.id} className="hover:bg-secondary/30 transition-colors">
                         <TableCell className="font-medium">{item.phone_number}</TableCell>
                         <TableCell>
                           <Button
@@ -482,8 +482,8 @@ const Settings = () => {
         </Card>
 
         {/* Manual Send Card */}
-        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
-          <CardHeader className="bg-gradient-to-r from-card to-secondary/20">
+        <Card className="border border-border/50 shadow-sm animate-fade-in" style={{ animationDelay: '150ms' }}>
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
             <CardTitle className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-primary/10">
                 <Send className="h-5 w-5 text-primary" />
@@ -491,46 +491,43 @@ const Settings = () => {
               Envio Manual
             </CardTitle>
             <CardDescription>
-              Envie um relatório de teste para os emails ou WhatsApp cadastrados
+              Envie relatórios manualmente para testar a configuração
             </CardDescription>
           </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
-                onClick={sendTestReport} 
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={sendTestReport}
                 disabled={sending || emails.length === 0}
-                className="h-12 px-8 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md font-medium"
+                className="h-11 px-6 bg-primary hover:bg-primary/90 transition-all shadow-md"
               >
                 {sending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <Mail className="h-4 w-4 mr-2" />
                 )}
-                {sending ? 'Enviando...' : 'Enviar Email'}
+                Enviar Email Agora
               </Button>
-              <Button 
-                onClick={sendWhatsAppReport} 
+              <Button
+                onClick={sendWhatsAppReport}
                 disabled={sendingWhatsapp || whatsappNumbers.length === 0}
-                className="h-12 px-8 bg-gradient-to-r from-green-600 to-green-500 hover:opacity-90 transition-all shadow-md font-medium"
+                className="h-11 px-6 bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)] transition-all shadow-md"
               >
                 {sendingWhatsapp ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                   <MessageCircle className="h-4 w-4 mr-2" />
                 )}
-                {sendingWhatsapp ? 'Enviando...' : 'Enviar WhatsApp'}
+                Enviar WhatsApp Agora
               </Button>
             </div>
-            {emails.length === 0 && whatsappNumbers.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                Adicione pelo menos um email ou número de WhatsApp para enviar o relatório.
-              </p>
-            )}
           </CardContent>
         </Card>
 
         {/* Activity History */}
-        <ActivityHistory />
+        <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <ActivityHistory />
+        </div>
       </main>
       <Footer />
     </div>

@@ -85,8 +85,8 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
   }, [sortedBatches]);
 
   return (
-    <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-card to-secondary/20">
+    <Card className="border border-border/50 shadow-sm overflow-hidden">
+      <CardHeader className="border-b border-border/50 bg-secondary/30">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-primary/10">
@@ -95,7 +95,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
             Cervejas Cadastradas
           </CardTitle>
           <div className="flex gap-3 text-sm">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary border border-border/50">
               <Package className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{filteredBatches.length} lote{filteredBatches.length !== 1 ? 's' : ''}</span>
             </div>
@@ -109,7 +109,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
       <CardContent className="p-0">
         {sortedBatches.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="p-4 rounded-full bg-secondary/50 mb-4">
+            <div className="p-4 rounded-full bg-secondary mb-4">
               <BeerIcon className="h-10 w-10 text-muted-foreground/50" />
             </div>
             <p className="text-muted-foreground font-medium">
@@ -125,12 +125,12 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-secondary/30 hover:bg-secondary/30 border-b border-border/50">
-                  <TableHead className="font-semibold">Cerveja</TableHead>
-                  <TableHead className="font-semibold">Lote</TableHead>
-                  <TableHead className="text-center font-semibold">Qtd</TableHead>
-                  <TableHead className="font-semibold">Validade</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
+                <TableRow className="bg-secondary/50 hover:bg-secondary/50 border-b border-border/50">
+                  <TableHead className="font-semibold text-foreground">Cerveja</TableHead>
+                  <TableHead className="font-semibold text-foreground">Lote</TableHead>
+                  <TableHead className="text-center font-semibold text-foreground">Qtd</TableHead>
+                  <TableHead className="font-semibold text-foreground">Validade</TableHead>
+                  <TableHead className="font-semibold text-foreground">Status</TableHead>
                   <TableHead className="w-[100px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -155,7 +155,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
                               <span className="w-2 h-2 rounded-full bg-primary"></span>
                               {beerName}
                               {beerBatches.length > 1 && (
-                                <Badge variant="outline" className="text-xs bg-secondary/50">
+                                <Badge variant="secondary" className="text-xs">
                                   {beerBatches.length} lotes
                                 </Badge>
                               )}
@@ -163,7 +163,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
                           </TableCell>
                         ) : null}
                         <TableCell>
-                          <code className="px-2 py-1 rounded-md bg-secondary/50 text-sm font-mono">
+                          <code className="px-2 py-1 rounded-md bg-secondary text-sm font-mono">
                             {batch.lot}
                           </code>
                         </TableCell>

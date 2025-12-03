@@ -17,8 +17,11 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
   if (daysUntilExpiration < 0) {
     return (
       <Badge 
-        variant="destructive" 
-        className="flex items-center gap-1.5 font-medium px-2.5 py-1 shadow-sm"
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-[hsl(0,85%,60%)] hover:bg-[hsl(0,85%,55%)]",
+          "text-white border-0 shadow-sm"
+        )}
       >
         <XCircle className="h-3.5 w-3.5" />
         Vencido ({Math.abs(daysUntilExpiration)}d)
@@ -29,8 +32,11 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
   if (daysUntilExpiration === 0) {
     return (
       <Badge 
-        variant="destructive" 
-        className="flex items-center gap-1.5 font-medium px-2.5 py-1 animate-pulse shadow-sm"
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1 animate-pulse",
+          "bg-[hsl(0,85%,60%)] hover:bg-[hsl(0,85%,55%)]",
+          "text-white border-0 shadow-sm"
+        )}
       >
         <AlertTriangle className="h-3.5 w-3.5" />
         Vence hoje!
@@ -43,7 +49,7 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
       <Badge 
         className={cn(
           "flex items-center gap-1.5 font-medium px-2.5 py-1",
-          "bg-gradient-to-r from-orange-500 to-orange-400",
+          "bg-[hsl(35,95%,55%)] hover:bg-[hsl(35,95%,50%)]",
           "text-white border-0 shadow-sm animate-pulse"
         )}
       >
@@ -58,7 +64,7 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
       <Badge 
         className={cn(
           "flex items-center gap-1.5 font-medium px-2.5 py-1",
-          "bg-gradient-to-r from-amber-500 to-yellow-400",
+          "bg-[hsl(45,100%,50%)] hover:bg-[hsl(45,100%,45%)]",
           "text-amber-950 border-0 shadow-sm"
         )}
       >
@@ -73,7 +79,7 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
       <Badge 
         className={cn(
           "flex items-center gap-1.5 font-medium px-2.5 py-1",
-          "bg-gradient-to-r from-blue-500 to-blue-400",
+          "bg-[hsl(195,100%,50%)] hover:bg-[hsl(195,100%,45%)]",
           "text-white border-0 shadow-sm"
         )}
       >
@@ -99,7 +105,7 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
     <Badge 
       className={cn(
         "flex items-center gap-1.5 font-medium px-2.5 py-1",
-        "bg-gradient-to-r from-emerald-500 to-green-400",
+        "bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)]",
         "text-white border-0 shadow-sm"
       )}
     >
