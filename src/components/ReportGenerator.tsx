@@ -47,17 +47,17 @@ export const ReportGenerator = ({ batches }: ReportGeneratorProps) => {
 
   return (
     <Button
-      variant="secondary"
+      variant="ghost"
       size="icon"
       onClick={handleGeneratePDF}
       disabled={generating}
-      className="bg-primary-foreground/10 hover:bg-primary-foreground/20 border-primary-foreground/20 backdrop-blur-sm transition-all hover:scale-105"
+      className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
       title="Gerar relatório PDF"
     >
       {generating ? (
-        <Loader2 className="h-5 w-5 animate-spin text-primary-foreground" />
+        <Loader2 className="h-5 w-5 animate-spin" />
       ) : (
-        <FileDown className="h-5 w-5 text-primary-foreground" />
+        <FileDown className="h-5 w-5" />
       )}
     </Button>
   );

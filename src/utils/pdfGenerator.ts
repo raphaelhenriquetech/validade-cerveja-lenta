@@ -30,6 +30,7 @@ const categorizeBatches = (batches: BeerBatch[]): CategoryData[] => {
   const critical: BeerBatch[] = [];
   const attention: BeerBatch[] = [];
   const alert: BeerBatch[] = [];
+  const ok: BeerBatch[] = [];
 
   batches.forEach(batch => {
     const days = getDaysUntilExpiration(batch.expiration_date);
@@ -41,6 +42,8 @@ const categorizeBatches = (batches: BeerBatch[]): CategoryData[] => {
       attention.push(batch);
     } else if (days <= 30) {
       alert.push(batch);
+    } else {
+      ok.push(batch);
     }
   });
 
@@ -79,6 +82,15 @@ const categorizeBatches = (batches: BeerBatch[]): CategoryData[] => {
       subtitle: `${alert.length} lote${alert.length > 1 ? 's' : ''}`,
       batches: alert.sort((a, b) => getDaysUntilExpiration(a.expiration_date) - getDaysUntilExpiration(b.expiration_date)),
       color: [37, 99, 235] // blue
+    });
+  }
+
+  if (ok.length > 0) {
+    categories.push({
+      title: 'OK - mais de 30 dias',
+      subtitle: `${ok.length} lote${ok.length > 1 ? 's' : ''}`,
+      batches: ok.sort((a, b) => getDaysUntilExpiration(a.expiration_date) - getDaysUntilExpiration(b.expiration_date)),
+      color: [34, 197, 94] // green
     });
   }
 
@@ -130,6 +142,7 @@ export const generateExpirationReportPDF = (batches: BeerBatch[]): void => {
     { label: 'Críticos (até 7 dias)', count: categories.find(c => c.title.includes('CRÍTICO'))?.batches.length || 0, color: [234, 88, 12] },
     { label: 'Atenção (8-15 dias)', count: categories.find(c => c.title.includes('ATENÇÃO'))?.batches.length || 0, color: [202, 138, 4] },
     { label: 'Alerta (16-30 dias)', count: categories.find(c => c.title.includes('ALERTA'))?.batches.length || 0, color: [37, 99, 235] },
+    { label: 'OK (mais de 30 dias)', count: categories.find(c => c.title.includes('OK'))?.batches.length || 0, color: [34, 197, 94] },
   ];
   
   summaryItems.forEach(item => {
@@ -140,12 +153,18 @@ export const generateExpirationReportPDF = (batches: BeerBatch[]): void => {
     yPosition += 6;
   });
   
+  // Total geral
+  yPosition += 2;
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Total: ${batches.length} lote${batches.length !== 1 ? 's' : ''} cadastrado${batches.length !== 1 ? 's' : ''}`, 24, yPosition);
+  doc.setFont('helvetica', 'normal');
+  
   // Check if we have any data to show
   if (categories.length === 0) {
     yPosition += 10;
     doc.setFontSize(12);
     doc.setTextColor(34, 197, 94);
-    doc.text('Nenhum lote com vencimento nos próximos 30 dias!', pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('Nenhum lote cadastrado no sistema!', pageWidth / 2, yPosition, { align: 'center' });
   } else {
     // Tables for each category
     categories.forEach(category => {
