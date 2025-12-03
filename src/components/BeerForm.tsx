@@ -31,7 +31,7 @@ export function BeerForm({ onAdd }: BeerFormProps) {
       name.trim(),
       lot.trim(),
       parseInt(quantity),
-      expirationDate.toISOString().split('T')[0]
+      format(expirationDate, 'yyyy-MM-dd')
     );
 
     setName('');
