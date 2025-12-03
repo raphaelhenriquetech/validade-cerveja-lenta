@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
 import { Trash2, Beer as BeerIcon, Package, Pencil } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
 import {
@@ -169,7 +169,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
                         </TableCell>
                         <TableCell className="text-center font-bold">{batch.quantity}</TableCell>
                         <TableCell>
-                          {format(new Date(batch.expiration_date), 'dd/MM/yyyy', { locale: ptBR })}
+                          {format(parseISO(batch.expiration_date), 'dd/MM/yyyy', { locale: ptBR })}
                         </TableCell>
                         <TableCell>
                           <ExpirationBadge expirationDate={batch.expiration_date} />

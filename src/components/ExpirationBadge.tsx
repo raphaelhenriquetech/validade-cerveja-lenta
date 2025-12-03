@@ -1,4 +1,4 @@
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, parseISO } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,8 +10,7 @@ interface ExpirationBadgeProps {
 export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const expDate = new Date(expirationDate);
-  expDate.setHours(0, 0, 0, 0);
+  const expDate = parseISO(expirationDate);
   const daysUntilExpiration = differenceInDays(expDate, today);
 
   if (daysUntilExpiration < 0) {
@@ -118,7 +117,6 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
 export function getDaysUntilExpiration(expirationDate: string): number {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const expDate = new Date(expirationDate);
-  expDate.setHours(0, 0, 0, 0);
+  const expDate = parseISO(expirationDate);
   return differenceInDays(expDate, today);
 }
