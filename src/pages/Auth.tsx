@@ -4,10 +4,8 @@ import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Beer, Loader2, Mail, Lock } from 'lucide-react';
-import Footer from '@/components/Footer';
+import { Beer, Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const authSchema = z.object({
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
@@ -18,6 +16,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +31,6 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate inputs
     const result = authSchema.safeParse({ email: email.trim(), password });
     if (!result.success) {
       toast({
@@ -107,63 +105,144 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/20 to-background p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-card/90 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-xl">
-              <Beer className="h-9 w-9 text-primary-foreground" />
-            </div>
+    <div className="flex min-h-screen w-full font-display">
+      {/* Left Panel - Branding (hidden on mobile) */}
+      <div className="relative hidden w-2/5 flex-col items-center justify-center bg-[#101622] text-primary-foreground lg:flex">
+        {/* SVG Pattern Background */}
+        <div className="absolute inset-0 z-0">
+          <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern 
+                height="48" 
+                id="grid-pattern" 
+                patternTransform="scale(1) rotate(0)" 
+                patternUnits="userSpaceOnUse" 
+                width="48"
+              >
+                <rect fill="hsla(0,0%,100%,0)" height="100%" width="100%" x="0" y="0" />
+                <path 
+                  d="M12 16H0v-4h12V0h4v12h12v4H16v12h-4V16zm12 20H12v-4h12V20h4v12h12v4H28v12h-4V36zM36 0v4h12v12h4V4h-4V0h-8z" 
+                  fill="hsla(223, 75%, 25%, 0.1)" 
+                  stroke="none" 
+                  strokeWidth="1"
+                />
+              </pattern>
+            </defs>
+            <rect fill="url(#grid-pattern)" height="800%" transform="translate(0,0)" width="800%" />
+          </svg>
+        </div>
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-start px-16 max-w-lg">
+          <div className="flex items-center gap-3 pb-6">
+            <Beer className="h-10 w-10 text-primary" />
+            <h2 className="text-2xl font-bold text-primary-foreground">Cerveja Lenta</h2>
           </div>
-          <div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Cerveja Lenta
-            </CardTitle>
-            <CardDescription className="mt-2">
-              {isLogin ? 'Entre na sua conta' : 'Crie sua conta'}
-            </CardDescription>
+          <h3 className="text-4xl font-bold tracking-tight text-primary-foreground mb-4">
+            Controle de lotes e validades para sua cervejaria.
+          </h3>
+          <p className="text-lg text-muted-foreground">
+            Monitore validades, evite perdas e otimize seu estoque com nossa solução inteligente.
+          </p>
+        </div>
+        
+        {/* Copyright */}
+        <div className="absolute bottom-6 left-6 text-sm text-muted-foreground">
+          <p>© 2024 Cerveja Lenta. Todos os direitos reservados.</p>
+        </div>
+      </div>
+
+      {/* Right Panel - Form */}
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#f6f6f8] p-4 sm:p-6 lg:p-8">
+        <div className="flex w-full max-w-md flex-col items-start gap-2">
+          {/* Mobile Logo */}
+          <div className="flex items-center gap-3 pb-4 lg:hidden">
+            <Beer className="h-8 w-8 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Cerveja Lenta</h2>
           </div>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
+          <h1 className="text-foreground tracking-tight text-[32px] font-bold leading-tight text-left pb-1">
+            {isLogin ? 'Acesse sua conta' : 'Crie sua conta'}
+          </h1>
+          <p className="text-muted-foreground text-base font-normal leading-normal pb-6">
+            {isLogin 
+              ? 'Bem-vindo de volta! Por favor, insira seus dados.' 
+              : 'Preencha os dados abaixo para criar sua conta.'}
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
+            {/* Email Field */}
+            <label className="flex flex-col w-full">
+              <p className="text-foreground text-base font-medium leading-normal pb-2">Email</p>
+              <div className="relative flex items-center">
+                <Mail className="absolute left-4 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Digite seu email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+                  className="h-14 pl-12 pr-4 text-base bg-background border-border focus:ring-2 focus:ring-primary/50"
                   required
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            </label>
+
+            {/* Password Field */}
+            <label className="flex flex-col w-full">
+              <p className="text-foreground text-base font-medium leading-normal pb-2">Senha</p>
+              <div className="relative flex items-center">
+                <Lock className="absolute left-4 h-5 w-5 text-muted-foreground" />
                 <Input
-                  type="password"
-                  placeholder="Senha"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Digite sua senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-11 bg-background/50 border-border/50 focus:border-primary transition-all"
+                  className="h-14 pl-12 pr-12 text-base bg-background border-border focus:ring-2 focus:ring-primary/50"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
-            </div>
+            </label>
+
+            {/* Forgot Password Link (only on login) */}
+            {isLogin && (
+              <div className="flex w-full items-center justify-end -mt-2">
+                <button
+                  type="button"
+                  className="text-primary text-sm font-medium leading-normal underline hover:text-primary/80 transition-colors"
+                  onClick={() => toast({
+                    title: 'Em breve',
+                    description: 'Funcionalidade de recuperação de senha em desenvolvimento.',
+                  })}
+                >
+                  Esqueceu a senha?
+                </button>
+              </div>
+            )}
+
+            {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-11 bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all shadow-md font-medium"
+              className="w-full h-14 text-base font-bold mt-2"
               disabled={submitting}
             >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : null}
+              {submitting && <Loader2 className="h-5 w-5 animate-spin mr-2" />}
               {isLogin ? 'Entrar' : 'Criar conta'}
             </Button>
           </form>
-          <div className="mt-6 text-center">
+
+          {/* Toggle Login/Signup */}
+          <div className="mt-6 text-center w-full">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
@@ -172,9 +251,8 @@ const Auth = () => {
               {isLogin ? 'Não tem conta? Cadastre-se' : 'Já tem conta? Entre'}
             </button>
           </div>
-        </CardContent>
-      </Card>
-      <Footer />
+        </div>
+      </div>
     </div>
   );
 };
