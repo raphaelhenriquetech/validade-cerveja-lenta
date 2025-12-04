@@ -82,12 +82,12 @@ function generateHTML(categories: ReturnType<typeof categorizeBatches>): string 
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Relatório de Validades - Cerveja Lenta</title>
+      <title>Relatório de Validades - StockBrew</title>
     </head>
     <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="color: #1a1a1a;">🍺 Relatório de Validades</h1>
-        <p style="color: #666;">Cerveja Lenta - ${new Date().toLocaleDateString('pt-BR')}</p>
+        <p style="color: #666;">StockBrew - ${new Date().toLocaleDateString('pt-BR')}</p>
       </div>
 
       ${expired.length > 0 ? `
@@ -126,7 +126,7 @@ function generateHTML(categories: ReturnType<typeof categorizeBatches>): string 
       ` : ''}
 
       <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666;">
-        <p>Relatório gerado automaticamente pelo sistema Cerveja Lenta</p>
+        <p>Relatório gerado automaticamente pelo StockBrew - Cerveja Lenta Tech</p>
       </footer>
     </body>
     </html>
@@ -187,11 +187,11 @@ serve(async (req) => {
     const { expired, critical, attention, alert } = categories;
     const totalUrgent = expired.length + critical.length;
     const subject = totalUrgent > 0 
-      ? `⚠️ ALERTA: ${totalUrgent} lote(s) com vencimento urgente - Cerveja Lenta`
-      : `📊 Relatório de Validades - Cerveja Lenta`;
+      ? `⚠️ ALERTA: ${totalUrgent} lote(s) com vencimento urgente - StockBrew`
+      : `📊 Relatório de Validades - StockBrew`;
 
     const emailResponse = await resend.emails.send({
-      from: "Cerveja Lenta <onboarding@resend.dev>",
+      from: "StockBrew <onboarding@resend.dev>",
       to: recipients,
       subject,
       html,

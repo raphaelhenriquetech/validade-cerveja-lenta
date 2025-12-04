@@ -27,7 +27,7 @@ const Install = () => {
               </div>
               <CardTitle>App Instalado!</CardTitle>
               <CardDescription>
-                O Cerveja Lenta já está instalado no seu dispositivo.
+                O StockBrew já está instalado no seu dispositivo.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -56,7 +56,7 @@ const Install = () => {
             <div className="mx-auto w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg">
               <span className="text-3xl">🍺</span>
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Instalar Cerveja Lenta</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Instalar StockBrew</h1>
             <p className="text-muted-foreground">
               Instale o app no seu dispositivo para acesso rápido e funcionamento offline.
             </p>
@@ -133,7 +133,7 @@ const Install = () => {
                     <p className="text-sm font-medium mb-2">Chrome:</p>
                     <ol className="space-y-2 text-sm text-muted-foreground ml-4">
                       <li>1. Clique no ícone <MoreVertical className="inline h-4 w-4 mx-1" /> no canto superior direito</li>
-                      <li>2. Selecione <strong>Instalar Cerveja Lenta...</strong></li>
+                      <li>2. Selecione <strong>Instalar StockBrew...</strong></li>
                     </ol>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ const Install = () => {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="flex-shrink-0 w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-medium">2</span>
-                    <span>Selecione <strong>Instalar Cerveja Lenta</strong></span>
+                    <span>Selecione <strong>Instalar StockBrew</strong></span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="flex-shrink-0 w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-medium">3</span>

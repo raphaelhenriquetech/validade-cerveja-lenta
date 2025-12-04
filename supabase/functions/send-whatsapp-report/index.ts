@@ -53,7 +53,7 @@ const generateTextMessage = (categories: ReturnType<typeof categorizeBatches>): 
     return "✅ *Relatório de Validades*\n\nNenhum produto com vencimento próximo nos próximos 30 dias.";
   }
 
-  let message = "🍺 *RELATÓRIO DE VALIDADES*\n_Cerveja Lenta_\n\n";
+  let message = "🍺 *RELATÓRIO DE VALIDADES*\n_StockBrew_\n\n";
 
   if (expired.length > 0) {
     message += "🔴 *VENCIDOS*\n";
