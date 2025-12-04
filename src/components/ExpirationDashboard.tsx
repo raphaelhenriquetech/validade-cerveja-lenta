@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, AlertCircle, Clock, CheckCircle, XCircle, Package } from 'lucide-react';
 import { BeerBatch } from '@/hooks/useBeers';
 import { cn } from '@/lib/utils';
@@ -46,8 +45,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Todos os lotes',
       count: stats.total,
       icon: Package,
-      bgColor: 'bg-[hsl(264,80%,55%)]',
-      hoverBg: 'hover:bg-[hsl(264,80%,50%)]',
+      bgColor: 'bg-primary',
+      shadowColor: 'shadow-primary/20',
       isPulse: false,
     },
     {
@@ -56,8 +55,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Prazo expirado',
       count: stats.expired,
       icon: XCircle,
-      bgColor: 'bg-[hsl(0,85%,60%)]',
-      hoverBg: 'hover:bg-[hsl(0,85%,55%)]',
+      bgColor: 'bg-red-500',
+      shadowColor: 'shadow-red-500/20',
       isPulse: stats.expired > 0,
     },
     {
@@ -66,8 +65,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Até 7 dias',
       count: stats.critical,
       icon: AlertTriangle,
-      bgColor: 'bg-[hsl(35,95%,55%)]',
-      hoverBg: 'hover:bg-[hsl(35,95%,50%)]',
+      bgColor: 'bg-orange-400',
+      shadowColor: 'shadow-orange-400/20',
       isPulse: stats.critical > 0,
     },
     {
@@ -76,8 +75,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: '8 a 15 dias',
       count: stats.attention,
       icon: AlertCircle,
-      bgColor: 'bg-[hsl(45,100%,50%)]',
-      hoverBg: 'hover:bg-[hsl(45,100%,45%)]',
+      bgColor: 'bg-amber-400',
+      shadowColor: 'shadow-amber-400/20',
       isPulse: false,
     },
     {
@@ -86,8 +85,8 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: '16 a 30 dias',
       count: stats.alert,
       icon: Clock,
-      bgColor: 'bg-[hsl(195,100%,50%)]',
-      hoverBg: 'hover:bg-[hsl(195,100%,45%)]',
+      bgColor: 'bg-cyan-500',
+      shadowColor: 'shadow-cyan-500/20',
       isPulse: false,
     },
     {
@@ -96,46 +95,41 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       subtitle: 'Mais de 30 dias',
       count: stats.ok,
       icon: CheckCircle,
-      bgColor: 'bg-[hsl(160,84%,45%)]',
-      hoverBg: 'hover:bg-[hsl(160,84%,40%)]',
+      bgColor: 'bg-green-500',
+      shadowColor: 'shadow-green-500/20',
       isPulse: false,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
       {cards.map((card, index) => {
         const Icon = card.icon;
         const isActive = activeFilter === card.id;
         
         return (
-          <Card
+          <div
             key={card.id}
             className={cn(
-              'cursor-pointer transition-all duration-200 border-0 overflow-hidden group hover-lift',
+              'cursor-pointer transition-all duration-200 rounded-xl p-4 md:p-5 flex flex-col justify-between min-h-[140px] shadow-lg',
               card.bgColor,
-              card.hoverBg,
-              isActive && 'ring-4 ring-foreground/20 ring-offset-2 ring-offset-background scale-[1.02]',
-              card.isPulse && 'pulse-glow'
+              card.shadowColor,
+              isActive && 'ring-4 ring-white/30 scale-[1.02]',
+              card.isPulse && 'animate-pulse',
+              'hover:scale-[1.02] hover:shadow-xl'
             )}
             style={{ animationDelay: `${index * 50}ms` }}
             onClick={() => onFilterChange(isActive ? 'all' : card.id)}
           >
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center relative text-white">
-              <div className="absolute top-2 right-2 opacity-20">
-                <Icon className="h-8 w-8" />
-              </div>
-              <span className="text-4xl font-bold tracking-tight drop-shadow-md">
-                {card.count}
-              </span>
-              <span className="text-sm font-bold mt-1 drop-shadow-md">
-                {card.title}
-              </span>
-              <span className="text-xs font-semibold drop-shadow-sm">
-                {card.subtitle}
-              </span>
-            </CardContent>
-          </Card>
+            <div className="flex justify-end">
+              <Icon className="h-8 w-8 md:h-10 md:w-10 text-white/50" />
+            </div>
+            <div className="text-white">
+              <p className="text-3xl md:text-4xl font-bold">{card.count}</p>
+              <p className="font-semibold text-sm md:text-base">{card.title}</p>
+              <p className="text-xs md:text-sm text-white/80">{card.subtitle}</p>
+            </div>
+          </div>
         );
       })}
     </div>

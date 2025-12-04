@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon, Plus } from 'lucide-react';
@@ -41,91 +38,95 @@ export function BeerForm({ onAdd }: BeerFormProps) {
   };
 
   return (
-    <Card className="border border-border/50 shadow-sm">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-3 text-lg">
-          <div className="p-2 rounded-xl bg-primary/10">
-            <Plus className="h-5 w-5 text-primary" />
-          </div>
-          Cadastrar Novo Lote
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-muted-foreground">Nome da Cerveja</Label>
-            <Input
-              id="name"
-              placeholder="Ex: IPA Artesanal"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-11 border-border/60 focus:border-primary focus:ring-primary/20 transition-all"
-            />
-          </div>
+    <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl shadow-sm">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
+        <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
+          <Plus className="h-5 w-5 text-primary" />
+        </div>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Cadastrar Novo Lote</h2>
+      </div>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="beer-name">
+            Nome da Cerveja
+          </label>
+          <input
+            id="beer-name"
+            type="text"
+            placeholder="Ex: IPA Artesanal"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full h-11 px-3 bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="lot" className="text-sm font-medium text-muted-foreground">Lote</Label>
-            <Input
-              id="lot"
-              placeholder="Ex: L2024-001"
-              value={lot}
-              onChange={(e) => setLot(e.target.value)}
-              className="h-11 border-border/60 focus:border-primary focus:ring-primary/20 transition-all"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="lot-code">
+            Lote
+          </label>
+          <input
+            id="lot-code"
+            type="text"
+            placeholder="Ex: L2024-001"
+            value={lot}
+            onChange={(e) => setLot(e.target.value)}
+            className="w-full h-11 px-3 bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="quantity" className="text-sm font-medium text-muted-foreground">Quantidade</Label>
-            <Input
-              id="quantity"
-              type="number"
-              min="1"
-              placeholder="Ex: 24"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="h-11 border-border/60 focus:border-primary focus:ring-primary/20 transition-all"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="quantity">
+            Quantidade
+          </label>
+          <input
+            id="quantity"
+            type="number"
+            min="1"
+            placeholder="Ex: 24"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            className="w-full h-11 px-3 bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-muted-foreground">Data de Validade</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full h-11 justify-start text-left font-normal border-border/60 hover:bg-secondary/50 transition-all',
-                    !expirationDate && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
-                  {expirationDate ? format(expirationDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione a data'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={expirationDate}
-                  onSelect={setExpirationDate}
-                  initialFocus
-                  className="pointer-events-auto"
-                  locale={ptBR}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Data de Validade
+          </label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  'w-full h-11 px-3 pl-10 bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg text-left flex items-center',
+                  !expirationDate ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white'
+                )}
+              >
+                <CalendarIcon className="absolute left-3 h-5 w-5 text-primary pointer-events-none" />
+                {expirationDate ? format(expirationDate, 'dd/MM/yyyy', { locale: ptBR }) : 'Selecione a data'}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={expirationDate}
+                onSelect={setExpirationDate}
+                initialFocus
+                className="pointer-events-auto"
+                locale={ptBR}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
 
-          <div className="flex items-end">
-            <Button 
-              type="submit" 
-              className="w-full h-11 bg-primary hover:bg-primary/90 transition-all shadow-md font-medium"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Cadastrar
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        <Button 
+          type="submit" 
+          className="h-11 bg-primary text-white font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+        >
+          <Plus className="h-5 w-5" />
+          Cadastrar
+        </Button>
+      </form>
+    </div>
   );
 }
