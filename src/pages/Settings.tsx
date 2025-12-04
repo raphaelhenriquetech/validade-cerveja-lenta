@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Mail, Plus, Trash2, Send, Loader2, Settings as SettingsIcon, MessageCircle } from 'lucide-react';
@@ -293,229 +295,240 @@ const Settings = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card/80 dark:bg-card/50 backdrop-blur-sm border-b border-border/50 dark:border-border/30 px-4 lg:px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-screen-2xl mx-auto flex items-center gap-3 lg:gap-4">
-          <Link to="/">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9 lg:h-10 lg:w-10 hover:bg-secondary dark:hover:bg-secondary/50"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="bg-primary p-2.5 lg:p-3 rounded-xl shadow-lg shadow-primary/30">
-            <SettingsIcon className="h-5 w-5 lg:h-6 lg:w-6 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-lg lg:text-xl font-bold text-foreground">Configurações</h1>
-            <p className="text-xs lg:text-sm text-muted-foreground">Gerenciar emails e WhatsApp</p>
+    <div className="min-h-screen bg-background">
+      {/* Modern Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-40">
+        <div className="container py-4">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+              <SettingsIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Configurações</h1>
+              <p className="text-sm text-muted-foreground">Gerenciar emails e WhatsApp para relatórios</p>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-grow p-4 lg:p-8">
-        <div className="max-w-screen-2xl mx-auto space-y-6 lg:space-y-8">
-          {/* Email Card */}
-          <div className="bg-card dark:bg-card/80 rounded-xl shadow-sm border border-border/50 dark:border-border/30 overflow-hidden animate-fade-in">
-            <div className="p-4 lg:p-6 border-b border-border/50 dark:border-border/30">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
-                  <Mail className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">Emails para Relatório</h2>
+      <main className="container py-6 space-y-6 pb-20">
+        {/* Email Recipients Card */}
+        <Card className="border border-border/50 shadow-sm animate-fade-in">
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Mail className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm text-muted-foreground">Cadastre os emails que receberão o relatório diário</p>
-            </div>
-            <div className="p-4 lg:p-6 space-y-4">
-              <form onSubmit={addEmail} className="flex gap-3">
-                <input
-                  type="email"
-                  placeholder="Digite o email..."
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="flex-1 h-11 px-3 bg-secondary dark:bg-secondary/50 border-0 rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:outline-none transition-all"
-                />
-                <Button type="submit" className="h-11 px-6 bg-primary hover:bg-primary/90 shadow-md shadow-primary/20">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar
-                </Button>
-              </form>
+              Emails para Relatório
+            </CardTitle>
+            <CardDescription>
+              Cadastre os emails que receberão o relatório diário de validades
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
+            <form onSubmit={addEmail} className="flex gap-3">
+              <Input
+                type="email"
+                placeholder="Digite o email..."
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
+              />
+              <Button 
+                type="submit"
+                className="h-11 px-6 bg-primary hover:bg-primary/90 transition-all shadow-md"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar
+              </Button>
+            </form>
 
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : emails.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
+                  <Mail className="h-8 w-8 text-muted-foreground/50" />
                 </div>
-              ) : emails.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="p-4 rounded-full bg-secondary dark:bg-secondary/50 w-fit mx-auto mb-4">
-                    <Mail className="h-8 w-8 text-muted-foreground/50" />
-                  </div>
-                  <p className="text-muted-foreground font-medium">Nenhum email cadastrado</p>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-border/50 dark:border-border/30 overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-secondary/50 dark:bg-secondary/30 hover:bg-secondary/50 dark:hover:bg-secondary/30">
-                        <TableHead className="font-semibold text-muted-foreground">Email</TableHead>
-                        <TableHead className="w-[100px] font-semibold text-muted-foreground">Ações</TableHead>
+                <p className="text-muted-foreground font-medium">Nenhum email cadastrado</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Adicione um email para receber relatórios.</p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-border/50 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                      <TableHead className="font-semibold text-foreground">Email</TableHead>
+                      <TableHead className="w-[100px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {emails.map((email) => (
+                      <TableRow key={email.id} className="hover:bg-secondary/30 transition-colors">
+                        <TableCell className="font-medium">{email.email}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteEmail(email.id, email.email)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {emails.map((email) => (
-                        <TableRow key={email.id} className="hover:bg-secondary/30 dark:hover:bg-secondary/20 transition-colors">
-                          <TableCell className="font-medium text-foreground">{email.email}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deleteEmail(email.id, email.email)}
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* WhatsApp Card */}
-          <div className="bg-card dark:bg-card/80 rounded-xl shadow-sm border border-border/50 dark:border-border/30 overflow-hidden animate-fade-in" style={{ animationDelay: '100ms' }}>
-            <div className="p-4 lg:p-6 border-b border-border/50 dark:border-border/30">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="bg-green-500/10 dark:bg-green-500/20 p-2 rounded-lg">
-                  <MessageCircle className="h-5 w-5 text-green-500" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">WhatsApp para Relatório</h2>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Cadastre os números para relatórios via WhatsApp.{' '}
-                <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  Como obter API Key
-                </a>
-              </p>
-            </div>
-            <div className="p-4 lg:p-6 space-y-4">
-              <form onSubmit={addPhone} className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="tel"
-                  placeholder="+5511999999999"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  className="flex-1 h-11 px-3 bg-secondary dark:bg-secondary/50 border-0 rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-green-500 focus:outline-none transition-all"
-                />
-                <input
-                  type="text"
-                  placeholder="API Key do CallMeBot"
-                  value={newApiKey}
-                  onChange={(e) => setNewApiKey(e.target.value)}
-                  className="flex-1 h-11 px-3 bg-secondary dark:bg-secondary/50 border-0 rounded-lg text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-green-500 focus:outline-none transition-all"
-                />
-                <Button type="submit" className="h-11 px-6 bg-green-500 hover:bg-green-600 shadow-md shadow-green-500/20">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar
-                </Button>
-              </form>
+            )}
+          </CardContent>
+        </Card>
 
-              {loadingWhatsapp ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+        {/* WhatsApp Recipients Card */}
+        <Card className="border border-border/50 shadow-sm animate-fade-in" style={{ animationDelay: '100ms' }}>
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-[hsl(160,84%,45%)]/10">
+                <MessageCircle className="h-5 w-5 text-[hsl(160,84%,45%)]" />
+              </div>
+              WhatsApp para Relatório (CallMeBot)
+            </CardTitle>
+            <CardDescription>
+              Cadastre os números que receberão o relatório via WhatsApp. 
+              <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                Como obter a API Key
+              </a>
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
+            <form onSubmit={addPhone} className="flex flex-col sm:flex-row gap-3">
+              <Input
+                type="tel"
+                placeholder="+5511999999999"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
+              />
+              <Input
+                type="text"
+                placeholder="API Key do CallMeBot"
+                value={newApiKey}
+                onChange={(e) => setNewApiKey(e.target.value)}
+                className="flex-1 h-11 border-border/60 focus:border-primary transition-all"
+              />
+              <Button 
+                type="submit"
+                className="h-11 px-6 bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)] transition-all shadow-md"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar
+              </Button>
+            </form>
+
+            {loadingWhatsapp ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[hsl(160,84%,45%)]" />
+              </div>
+            ) : whatsappNumbers.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="p-4 rounded-full bg-secondary w-fit mx-auto mb-4">
+                  <MessageCircle className="h-8 w-8 text-muted-foreground/50" />
                 </div>
-              ) : whatsappNumbers.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="p-4 rounded-full bg-secondary dark:bg-secondary/50 w-fit mx-auto mb-4">
-                    <MessageCircle className="h-8 w-8 text-muted-foreground/50" />
-                  </div>
-                  <p className="text-muted-foreground font-medium">Nenhum número cadastrado</p>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-border/50 dark:border-border/30 overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-secondary/50 dark:bg-secondary/30 hover:bg-secondary/50 dark:hover:bg-secondary/30">
-                        <TableHead className="font-semibold text-muted-foreground">Número</TableHead>
-                        <TableHead className="w-[100px] font-semibold text-muted-foreground">Ações</TableHead>
+                <p className="text-muted-foreground font-medium">Nenhum número cadastrado</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Adicione um número para receber relatórios via WhatsApp.</p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-border/50 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-secondary/50 hover:bg-secondary/50">
+                      <TableHead className="font-semibold text-foreground">Número</TableHead>
+                      <TableHead className="w-[100px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {whatsappNumbers.map((item) => (
+                      <TableRow key={item.id} className="hover:bg-secondary/30 transition-colors">
+                        <TableCell className="font-medium">{item.phone_number}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deletePhone(item.id, item.phone_number)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {whatsappNumbers.map((item) => (
-                        <TableRow key={item.id} className="hover:bg-secondary/30 dark:hover:bg-secondary/20 transition-colors">
-                          <TableCell className="font-medium text-foreground">{item.phone_number}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => deletePhone(item.id, item.phone_number)}
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Manual Send Card */}
-          <div className="bg-card dark:bg-card/80 rounded-xl shadow-sm border border-border/50 dark:border-border/30 overflow-hidden animate-fade-in" style={{ animationDelay: '150ms' }}>
-            <div className="p-4 lg:p-6 border-b border-border/50 dark:border-border/30">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
-                  <Send className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-lg font-semibold text-foreground">Envio Manual</h2>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-              <p className="text-sm text-muted-foreground">Envie relatórios manualmente para testar</p>
-            </div>
-            <div className="p-4 lg:p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  onClick={sendTestReport}
-                  disabled={sending || emails.length === 0}
-                  className="flex-1 h-11 bg-primary hover:bg-primary/90 shadow-md shadow-primary/20"
-                >
-                  {sending ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Mail className="h-4 w-4 mr-2" />
-                  )}
-                  Enviar Email
-                </Button>
-                <Button
-                  onClick={sendWhatsAppReport}
-                  disabled={sendingWhatsapp || whatsappNumbers.length === 0}
-                  className="flex-1 h-11 bg-green-500 hover:bg-green-600 shadow-md shadow-green-500/20"
-                >
-                  {sendingWhatsapp ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                  )}
-                  Enviar WhatsApp
-                </Button>
-              </div>
-            </div>
-          </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Activity History */}
-          <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <ActivityHistory />
-          </div>
+        {/* Manual Send Card */}
+        <Card className="border border-border/50 shadow-sm animate-fade-in" style={{ animationDelay: '150ms' }}>
+          <CardHeader className="border-b border-border/50 bg-secondary/30">
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Send className="h-5 w-5 text-primary" />
+              </div>
+              Envio Manual
+            </CardTitle>
+            <CardDescription>
+              Envie relatórios manualmente para testar a configuração
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={sendTestReport}
+                disabled={sending || emails.length === 0}
+                className="h-11 px-6 bg-primary hover:bg-primary/90 transition-all shadow-md"
+              >
+                {sending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Mail className="h-4 w-4 mr-2" />
+                )}
+                Enviar Email Agora
+              </Button>
+              <Button
+                onClick={sendWhatsAppReport}
+                disabled={sendingWhatsapp || whatsappNumbers.length === 0}
+                className="h-11 px-6 bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)] transition-all shadow-md"
+              >
+                {sendingWhatsapp ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                )}
+                Enviar WhatsApp Agora
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Activity History */}
+        <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <ActivityHistory />
         </div>
       </main>
-
       <Footer />
     </div>
   );

@@ -1,4 +1,5 @@
 import { differenceInDays, parseISO } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,72 +15,102 @@ export function ExpirationBadge({ expirationDate }: ExpirationBadgeProps) {
 
   if (daysUntilExpiration < 0) {
     return (
-      <span className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-        "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300"
-      )}>
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-[hsl(0,85%,60%)] hover:bg-[hsl(0,85%,55%)]",
+          "text-white border-0 shadow-sm"
+        )}
+      >
         <XCircle className="h-3.5 w-3.5" />
-        {Math.abs(daysUntilExpiration)}d - Vencido
-      </span>
+        Vencido ({Math.abs(daysUntilExpiration)}d)
+      </Badge>
     );
   }
 
   if (daysUntilExpiration === 0) {
     return (
-      <span className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full animate-pulse",
-        "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300"
-      )}>
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1 animate-pulse",
+          "bg-[hsl(0,85%,60%)] hover:bg-[hsl(0,85%,55%)]",
+          "text-white border-0 shadow-sm"
+        )}
+      >
         <AlertTriangle className="h-3.5 w-3.5" />
         Vence hoje!
-      </span>
+      </Badge>
     );
   }
 
   if (daysUntilExpiration <= 7) {
     return (
-      <span className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-        "bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300"
-      )}>
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-[hsl(35,95%,55%)] hover:bg-[hsl(35,95%,50%)]",
+          "text-white border-0 shadow-sm animate-pulse"
+        )}
+      >
         <AlertTriangle className="h-3.5 w-3.5" />
         {daysUntilExpiration}d - Crítico
-      </span>
+      </Badge>
     );
   }
 
   if (daysUntilExpiration <= 15) {
     return (
-      <span className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-        "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300"
-      )}>
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-[hsl(45,100%,50%)] hover:bg-[hsl(45,100%,45%)]",
+          "text-amber-950 border-0 shadow-sm"
+        )}
+      >
         <AlertCircle className="h-3.5 w-3.5" />
         {daysUntilExpiration}d - Atenção
-      </span>
+      </Badge>
     );
   }
 
   if (daysUntilExpiration <= 30) {
     return (
-      <span className={cn(
-        "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-        "bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300"
-      )}>
+      <Badge 
+        className={cn(
+          "flex items-center gap-1.5 font-medium px-2.5 py-1",
+          "bg-[hsl(195,100%,50%)] hover:bg-[hsl(195,100%,45%)]",
+          "text-white border-0 shadow-sm"
+        )}
+      >
         <Clock className="h-3.5 w-3.5" />
         {daysUntilExpiration}d - Alerta
-      </span>
+      </Badge>
+    );
+  }
+
+  if (daysUntilExpiration <= 60) {
+    return (
+      <Badge 
+        variant="secondary" 
+        className="flex items-center gap-1.5 font-medium px-2.5 py-1 shadow-sm"
+      >
+        <Clock className="h-3.5 w-3.5" />
+        {daysUntilExpiration}d
+      </Badge>
     );
   }
 
   return (
-    <span className={cn(
-      "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-      "bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300"
-    )}>
+    <Badge 
+      className={cn(
+        "flex items-center gap-1.5 font-medium px-2.5 py-1",
+        "bg-[hsl(160,84%,45%)] hover:bg-[hsl(160,84%,40%)]",
+        "text-white border-0 shadow-sm"
+      )}
+    >
       <CheckCircle className="h-3.5 w-3.5" />
       {daysUntilExpiration}d - OK
-    </span>
+    </Badge>
   );
 }
 
