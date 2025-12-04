@@ -49,8 +49,8 @@ const Index = () => {
               <Beer className="h-5 w-5 lg:h-6 lg:w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg lg:text-xl font-bold text-foreground">StockBrew</h1>
-              <p className="text-xs lg:text-sm text-muted-foreground">Controle de Validades</p>
+              <h1 className="text-lg lg:text-xl font-bold text-foreground">Controle de Validades</h1>
+              <p className="text-xs lg:text-sm text-muted-foreground">Cerveja Lenta</p>
             </div>
           </div>
           <div className="flex items-center gap-1 lg:gap-2 text-muted-foreground">

@@ -136,7 +136,7 @@ const Auth = () => {
         <div className="relative z-10 flex flex-col items-start px-16 max-w-lg">
           <div className="flex items-center gap-3 pb-6">
             <Beer className="h-10 w-10 text-primary" />
-            <h2 className="text-2xl font-bold text-primary-foreground">StockBrew</h2>
+            <h2 className="text-2xl font-bold text-primary-foreground">Cerveja Lenta</h2>
           </div>
           <h3 className="text-4xl font-bold tracking-tight text-primary-foreground mb-4">
             Controle de lotes e validades para sua cervejaria.
@@ -148,7 +148,7 @@ const Auth = () => {
         
         {/* Copyright */}
         <div className="absolute bottom-6 left-6 text-sm text-muted-foreground">
-          <p>© 2024 Cerveja Lenta Tech. Todos os direitos reservados.</p>
+          <p>© 2024 Cerveja Lenta. Todos os direitos reservados.</p>
         </div>
       </div>
 
@@ -158,7 +158,7 @@ const Auth = () => {
           {/* Mobile Logo */}
           <div className="flex items-center gap-3 pb-4 lg:hidden">
             <Beer className="h-8 w-8 text-primary" />
-            <h2 className="text-xl font-bold text-foreground">StockBrew</h2>
+            <h2 className="text-xl font-bold text-foreground">Cerveja Lenta</h2>
           </div>
 
           <h1 className="text-foreground tracking-tight text-[32px] font-bold leading-tight text-left pb-1">

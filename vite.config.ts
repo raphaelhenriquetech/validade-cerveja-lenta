@@ -16,9 +16,9 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
-        name: 'StockBrew - Controle de Lotes e Validades',
-        short_name: 'StockBrew',
-        description: 'StockBrew - Sistema de controle de estoque para gerenciar validade de cervejas',
+        name: 'Controle de Lotes e Validades - Cerveja Lenta',
+        short_name: 'Cerveja Lenta',
+        description: 'Sistema de controle de estoque para gerenciar validade de cervejas',
         theme_color: '#7c3aed',
         background_color: '#ffffff',
         display: 'standalone',
