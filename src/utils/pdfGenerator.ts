@@ -105,7 +105,7 @@ export const generateExpirationReportPDF = (batches: BeerBatch[]): void => {
   // Header
   doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('CERVEJA LENTA', pageWidth / 2, yPosition, { align: 'center' });
+  doc.text('STOCKBREW', pageWidth / 2, yPosition, { align: 'center' });
   
   yPosition += 10;
   doc.setFontSize(14);
@@ -235,7 +235,7 @@ export const generateExpirationReportPDF = (batches: BeerBatch[]): void => {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      `Página ${i} de ${pageCount} | Cerveja Lenta - Controle de Validades`,
+      `Página ${i} de ${pageCount} | StockBrew - Feito por Cerveja Lenta Tech`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }
@@ -243,6 +243,6 @@ export const generateExpirationReportPDF = (batches: BeerBatch[]): void => {
   }
   
   // Save the PDF
-  const fileName = `relatorio-validades-cerveja-lenta-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+  const fileName = `relatorio-validades-stockbrew-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
   doc.save(fileName);
 };

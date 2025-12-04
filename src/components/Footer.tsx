@@ -1,7 +1,7 @@
 const Footer = () => {
   return (
     <footer className="text-center p-4 text-xs text-muted-foreground">
-      Controle de Lotes e Validades - Cerveja Lenta v1.0
+      StockBrew v1.0 | Feito pelo time Cerveja Lenta Tech
     </footer>
   );
 };
