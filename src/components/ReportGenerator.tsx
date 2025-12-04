@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
 import { generateExpirationReportPDF } from '@/utils/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
@@ -46,12 +45,10 @@ export const ReportGenerator = ({ batches }: ReportGeneratorProps) => {
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <button
       onClick={handleGeneratePDF}
       disabled={generating}
-      className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-500 dark:text-gray-400 disabled:opacity-50 transition-colors"
       title="Gerar relatório PDF"
     >
       {generating ? (
@@ -59,6 +56,6 @@ export const ReportGenerator = ({ batches }: ReportGeneratorProps) => {
       ) : (
         <FileDown className="h-5 w-5" />
       )}
-    </Button>
+    </button>
   );
 };

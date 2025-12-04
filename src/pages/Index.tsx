@@ -30,7 +30,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#18181B] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <span className="text-muted-foreground">Carregando...</span>
@@ -40,72 +40,72 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Modern Header - Light with colored accents */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="container py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-                <Beer className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground tracking-tight">Controle de Validades</h1>
-                <p className="text-sm text-muted-foreground">Cerveja Lenta</p>
-              </div>
+    <div className="flex flex-col min-h-screen bg-[#F8FAFC] dark:bg-[#18181B]">
+      {/* Modern Header */}
+      <header className="bg-white dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-700/50 px-4 md:px-6 py-4 sticky top-0 backdrop-blur-sm z-10">
+        <div className="max-w-screen-2xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="bg-primary p-2.5 md:p-3 rounded-lg shadow-md shadow-primary/30">
+              <Beer className="h-5 w-5 md:h-6 md:w-6 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <ReportGenerator batches={batches} />
-              <Link to="/produtos-tiny">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                  title="Produtos Tiny"
-                >
-                  <Package className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link to="/configuracoes">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
-                >
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </Link>
+            <div>
+              <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Controle de Validades</h1>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Cerveja Lenta</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 md:gap-2 text-gray-500 dark:text-gray-400">
+            <ReportGenerator batches={batches} />
+            <Link to="/produtos-tiny">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={handleLogout}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700"
+                title="Produtos Tiny"
               >
-                <LogOut className="h-5 w-5" />
+                <Package className="h-5 w-5" />
               </Button>
-            </div>
+            </Link>
+            <Link to="/configuracoes">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleLogout}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="container py-6 space-y-6 pb-20">
-        <div className="animate-fade-in">
-          <ExpirationDashboard 
-            batches={batches} 
-            onFilterChange={setFilter} 
-            activeFilter={filter} 
-          />
-        </div>
-        <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-          <BeerForm onAdd={addBatch} />
-        </div>
-        <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-          <BeerList 
-            batches={batches} 
-            onDeleteBatch={deleteBatch} 
-            onUpdateBatch={updateBatch}
-            filter={filter} 
-          />
+      <main className="flex-grow p-4 md:p-6 lg:p-8">
+        <div className="max-w-screen-2xl mx-auto space-y-6 md:space-y-8">
+          <div className="animate-fade-in">
+            <ExpirationDashboard 
+              batches={batches} 
+              onFilterChange={setFilter} 
+              activeFilter={filter} 
+            />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <BeerForm onAdd={addBatch} />
+          </div>
+          <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <BeerList 
+              batches={batches} 
+              onDeleteBatch={deleteBatch} 
+              onUpdateBatch={updateBatch}
+              filter={filter} 
+            />
+          </div>
         </div>
       </main>
       <Footer />
