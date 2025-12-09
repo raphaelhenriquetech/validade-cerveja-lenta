@@ -12,7 +12,7 @@ import { ReportGenerator } from '@/components/ReportGenerator';
 import Footer from '@/components/Footer';
 
 const Index = () => {
-  const { batches, loading, addBatch, deleteBatch, updateBatch } = useBeers();
+  const { batches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync } = useBeers();
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState('all');
@@ -103,6 +103,7 @@ const Index = () => {
               batches={batches} 
               onDeleteBatch={deleteBatch} 
               onUpdateBatch={updateBatch}
+              onToggleOlistSync={toggleOlistSync}
               filter={filter} 
             />
           </div>
