@@ -45,6 +45,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
   const [editQuantity, setEditQuantity] = useState('');
   const [editBeerName, setEditBeerName] = useState('');
   const [editExpirationDate, setEditExpirationDate] = useState('');
+  const [editSku, setEditSku] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   // First filter by search term
@@ -53,7 +54,8 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
     const search = searchTerm.toLowerCase();
     return batches.filter(batch =>
       batch.beer_name.toLowerCase().includes(search) ||
-      batch.lot.toLowerCase().includes(search)
+      batch.lot.toLowerCase().includes(search) ||
+      (batch.sku && batch.sku.toLowerCase().includes(search))
     );
   }, [batches, searchTerm]);
 
@@ -165,7 +167,8 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50 dark:bg-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
-                <TableHead className="p-4 pl-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider w-2/5">Cerveja</TableHead>
+                <TableHead className="p-4 pl-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Cerveja</TableHead>
+                <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">SKU</TableHead>
                 <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Lote</TableHead>
                 <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider text-center">Qtd</TableHead>
                 <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Validade</TableHead>
@@ -202,6 +205,9 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
                           </div>
                         </TableCell>
                       ) : null}
+                      <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
+                        {batch.sku || '—'}
+                      </TableCell>
                       <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
                         {batch.lot}
                       </TableCell>
@@ -260,6 +266,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
                               setEditQuantity(batch.quantity.toString());
                               setEditBeerName(batch.beer_name);
                               setEditExpirationDate(batch.expiration_date);
+                              setEditSku(batch.sku || '');
                             }}
                           >
                             <Pencil className="h-5 w-5" />
@@ -319,6 +326,15 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="edit_sku">SKU</Label>
+              <Input
+                id="edit_sku"
+                value={editSku}
+                onChange={(e) => setEditSku(e.target.value)}
+                placeholder="Ex: SKU-001"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="quantity">Quantidade</Label>
               <Input
                 id="quantity"
@@ -354,6 +370,9 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistS
                   }
                   if (editExpirationDate && editExpirationDate !== editingBatch.expiration_date) {
                     updates.expiration_date = editExpirationDate;
+                  }
+                  if (editSku !== (editingBatch.sku || '')) {
+                    updates.sku = editSku || null;
                   }
                   if (Object.keys(updates).length > 0) {
                     onUpdateBatch(editingBatch.id, updates, editingBatch);

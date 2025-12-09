@@ -8,6 +8,7 @@ export interface BeerBatch {
   lot: string;
   quantity: number;
   expiration_date: string;
+  sku?: string | null;
   olist_synced?: boolean;
   olist_synced_at?: string | null;
 }
@@ -64,7 +65,7 @@ export function useBeers() {
     fetchBatches();
   }, [fetchBatches]);
 
-  const addBatch = async (beerName: string, lot: string, quantity: number, expirationDate: string) => {
+  const addBatch = async (beerName: string, lot: string, quantity: number, expirationDate: string, sku?: string) => {
     try {
       const { error } = await supabase
         .from('beer_batches')
@@ -73,20 +74,21 @@ export function useBeers() {
           lot,
           quantity,
           expiration_date: expirationDate,
+          sku: sku || null,
         });
 
       if (error) throw error;
 
       toast({
         title: 'Lote adicionado',
-        description: `${beerName} - Lote ${lot}`,
+        description: `${beerName} - Lote ${lot}${sku ? ` (SKU: ${sku})` : ''}`,
       });
 
       await logActivity(
         'batch_created',
         'beer_batch',
         null,
-        `Novo lote cadastrado: ${beerName} - Lote ${lot} (${quantity} un.)`
+        `Novo lote cadastrado: ${beerName} - Lote ${lot}${sku ? ` - SKU ${sku}` : ''} (${quantity} un.)`
       );
 
       fetchBatches();
@@ -159,13 +161,16 @@ export function useBeers() {
         if (updates.expiration_date && updates.expiration_date !== oldBatch.expiration_date) {
           changes.push(`validade alterada`);
         }
+        if (updates.sku !== undefined && updates.sku !== oldBatch.sku) {
+          changes.push(`SKU: ${oldBatch.sku || '(vazio)'} → ${updates.sku || '(vazio)'}`);
+        }
 
         await logActivity(
           'batch_updated',
           'beer_batch',
           batchId,
           `Lote ${oldBatch.lot} atualizado: ${changes.join(', ')}`,
-          { quantity: oldBatch.quantity, beer_name: oldBatch.beer_name, expiration_date: oldBatch.expiration_date },
+          { quantity: oldBatch.quantity, beer_name: oldBatch.beer_name, expiration_date: oldBatch.expiration_date, sku: oldBatch.sku },
           updates
         );
       }

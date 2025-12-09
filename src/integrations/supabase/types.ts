@@ -57,6 +57,7 @@ export type Database = {
           olist_synced: boolean | null
           olist_synced_at: string | null
           quantity: number
+          sku: string | null
         }
         Insert: {
           beer_name: string
@@ -67,6 +68,7 @@ export type Database = {
           olist_synced?: boolean | null
           olist_synced_at?: string | null
           quantity: number
+          sku?: string | null
         }
         Update: {
           beer_name?: string
@@ -77,6 +79,7 @@ export type Database = {
           olist_synced?: boolean | null
           olist_synced_at?: string | null
           quantity?: number
+          sku?: string | null
         }
         Relationships: []
       }
