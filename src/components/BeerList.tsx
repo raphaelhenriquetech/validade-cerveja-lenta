@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package, Pencil } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
@@ -42,9 +42,21 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
   const [editQuantity, setEditQuantity] = useState('');
   const [editBeerName, setEditBeerName] = useState('');
   const [editExpirationDate, setEditExpirationDate] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
+  // First filter by search term
+  const searchFilteredBatches = useMemo(() => {
+    if (!searchTerm.trim()) return batches;
+    const search = searchTerm.toLowerCase();
+    return batches.filter(batch =>
+      batch.beer_name.toLowerCase().includes(search) ||
+      batch.lot.toLowerCase().includes(search)
+    );
+  }, [batches, searchTerm]);
+
+  // Then filter by status
   const filteredBatches = useMemo(() => {
-    return batches.filter(batch => {
+    return searchFilteredBatches.filter(batch => {
       const days = getDaysUntilExpiration(batch.expiration_date);
       switch (filter) {
         case 'expired':
@@ -61,7 +73,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
           return true;
       }
     });
-  }, [batches, filter]);
+  }, [searchFilteredBatches, filter]);
 
   const sortedBatches = useMemo(() => {
     return [...filteredBatches].sort((a, b) => 
@@ -85,36 +97,64 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
 
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 md:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
-            <BeerIcon className="h-5 w-5 text-primary" />
+      <div className="p-4 md:p-6 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
+              <BeerIcon className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Cervejas Cadastradas</h2>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Cervejas Cadastradas</h2>
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="bg-gray-100 dark:bg-zinc-800 rounded-full px-3 py-1 text-sm flex items-center gap-2">
+              <Package className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-700 dark:text-gray-300">{filteredBatches.length} lotes</span>
+            </div>
+            <div className="bg-primary/10 dark:bg-primary/20 text-primary rounded-full px-3 py-1 text-sm font-semibold">
+              {totalQuantity} un.
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-3 md:gap-4">
-          <div className="bg-gray-100 dark:bg-zinc-800 rounded-full px-3 py-1 text-sm flex items-center gap-2">
-            <Package className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <span className="text-gray-700 dark:text-gray-300">{filteredBatches.length} lotes</span>
-          </div>
-          <div className="bg-primary/10 dark:bg-primary/20 text-primary rounded-full px-3 py-1 text-sm font-semibold">
-            {totalQuantity} un.
-          </div>
+        
+        {/* Search field */}
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Buscar cerveja ou lote..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-primary focus:border-primary rounded-lg pl-10 pr-10 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 
       {sortedBatches.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="p-4 rounded-full bg-gray-100 dark:bg-zinc-800 mb-4">
-            <BeerIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+            {searchTerm ? (
+              <Search className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+            ) : (
+              <BeerIcon className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+            )}
           </div>
           <p className="text-gray-600 dark:text-gray-400 font-medium">
-            {filter === 'all' 
-              ? 'Nenhuma cerveja cadastrada ainda.' 
-              : 'Nenhuma cerveja encontrada com este filtro.'}
+            {searchTerm 
+              ? `Nenhuma cerveja encontrada para "${searchTerm}"`
+              : filter === 'all' 
+                ? 'Nenhuma cerveja cadastrada ainda.' 
+                : 'Nenhuma cerveja encontrada com este filtro.'}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-            {filter === 'all' && 'Adicione seu primeiro lote usando o formulário acima.'}
+            {!searchTerm && filter === 'all' && 'Adicione seu primeiro lote usando o formulário acima.'}
           </p>
         </div>
       ) : (
