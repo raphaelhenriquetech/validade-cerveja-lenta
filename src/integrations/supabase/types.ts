@@ -54,6 +54,8 @@ export type Database = {
           expiration_date: string
           id: string
           lot: string
+          olist_synced: boolean | null
+          olist_synced_at: string | null
           quantity: number
         }
         Insert: {
@@ -62,6 +64,8 @@ export type Database = {
           expiration_date: string
           id?: string
           lot: string
+          olist_synced?: boolean | null
+          olist_synced_at?: string | null
           quantity: number
         }
         Update: {
@@ -70,6 +74,8 @@ export type Database = {
           expiration_date?: string
           id?: string
           lot?: string
+          olist_synced?: boolean | null
+          olist_synced_at?: string | null
           quantity?: number
         }
         Relationships: []

@@ -8,6 +8,8 @@ export interface BeerBatch {
   lot: string;
   quantity: number;
   expiration_date: string;
+  olist_synced?: boolean;
+  olist_synced_at?: string | null;
 }
 
 const logActivity = async (
@@ -179,5 +181,45 @@ export function useBeers() {
     }
   };
 
-  return { batches, loading, addBatch, deleteBatch, updateBatch, refetch: fetchBatches };
+  const toggleOlistSync = async (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => {
+    try {
+      const newState = !currentState;
+      const syncedAt = newState ? new Date().toISOString() : null;
+
+      const { error } = await supabase
+        .from('beer_batches')
+        .update({
+          olist_synced: newState,
+          olist_synced_at: syncedAt,
+        })
+        .eq('id', batchId);
+
+      if (error) throw error;
+
+      toast({
+        title: newState ? 'Marcado como lançado' : 'Desmarcado',
+        description: `${batchInfo.beer_name} - Lote ${batchInfo.lot}`,
+      });
+
+      await logActivity(
+        newState ? 'olist_synced' : 'olist_unsynced',
+        'beer_batch',
+        batchId,
+        newState 
+          ? `Lote marcado como lançado no Olist: ${batchInfo.beer_name} - Lote ${batchInfo.lot}`
+          : `Lote desmarcado do Olist: ${batchInfo.beer_name} - Lote ${batchInfo.lot}`
+      );
+
+      fetchBatches();
+    } catch (error: any) {
+      console.error('Error toggling Olist sync:', error);
+      toast({
+        title: 'Erro ao atualizar status',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return { batches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, refetch: fetchBatches };
 }

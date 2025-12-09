@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BeerBatch } from '@/hooks/useBeers';
 import { cn } from '@/lib/utils';
 
@@ -34,10 +36,11 @@ interface BeerListProps {
   batches: BeerBatch[];
   onDeleteBatch: (batchId: string, batchInfo?: { beer_name: string; lot: string }) => void;
   onUpdateBatch: (batchId: string, updates: Partial<BeerBatch>, oldBatch?: BeerBatch) => void;
+  onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   filter: string;
 }
 
-export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: BeerListProps) {
+export function BeerList({ batches, onDeleteBatch, onUpdateBatch, onToggleOlistSync, filter }: BeerListProps) {
   const [editingBatch, setEditingBatch] = useState<BeerBatch | null>(null);
   const [editQuantity, setEditQuantity] = useState('');
   const [editBeerName, setEditBeerName] = useState('');
@@ -167,6 +170,7 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
                 <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider text-center">Qtd</TableHead>
                 <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Validade</TableHead>
                 <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Status</TableHead>
+                <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Olist</TableHead>
                 <TableHead className="p-4 pr-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -209,6 +213,43 @@ export function BeerList({ batches, onDeleteBatch, onUpdateBatch, filter }: Beer
                       </TableCell>
                       <TableCell className="p-4">
                         <ExpirationBadge expirationDate={batch.expiration_date} />
+                      </TableCell>
+                      <TableCell className="p-4">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-2 cursor-pointer">
+                                <Checkbox
+                                  checked={batch.olist_synced || false}
+                                  onCheckedChange={() => {
+                                    if (onToggleOlistSync) {
+                                      onToggleOlistSync(batch.id, batch.olist_synced || false, {
+                                        beer_name: batch.beer_name,
+                                        lot: batch.lot,
+                                      });
+                                    }
+                                  }}
+                                  className={cn(
+                                    batch.olist_synced && "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                  )}
+                                />
+                                <span className={cn(
+                                  "text-xs whitespace-nowrap",
+                                  batch.olist_synced 
+                                    ? "text-green-600 dark:text-green-400 font-medium" 
+                                    : "text-gray-500 dark:text-gray-400"
+                                )}>
+                                  {batch.olist_synced ? "Lançado ✓" : "Lançar"}
+                                </span>
+                              </div>
+                            </TooltipTrigger>
+                            {batch.olist_synced && batch.olist_synced_at && (
+                              <TooltipContent>
+                                <p>Lançado em: {format(new Date(batch.olist_synced_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </TableCell>
                       <TableCell className="p-4 pr-6">
                         <div className="flex items-center gap-2">
