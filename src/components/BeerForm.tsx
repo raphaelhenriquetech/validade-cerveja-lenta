@@ -8,11 +8,12 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface BeerFormProps {
-  onAdd: (beerName: string, lot: string, quantity: number, expirationDate: string) => void;
+  onAdd: (beerName: string, lot: string, quantity: number, expirationDate: string, sku?: string) => void;
 }
 
 export function BeerForm({ onAdd }: BeerFormProps) {
   const [name, setName] = useState('');
+  const [sku, setSku] = useState('');
   const [lot, setLot] = useState('');
   const [quantity, setQuantity] = useState('');
   const [expirationDate, setExpirationDate] = useState<Date>();
@@ -28,10 +29,12 @@ export function BeerForm({ onAdd }: BeerFormProps) {
       name.trim(),
       lot.trim(),
       parseInt(quantity),
-      format(expirationDate, 'yyyy-MM-dd')
+      format(expirationDate, 'yyyy-MM-dd'),
+      sku.trim() || undefined
     );
 
     setName('');
+    setSku('');
     setLot('');
     setQuantity('');
     setExpirationDate(undefined);
@@ -45,7 +48,7 @@ export function BeerForm({ onAdd }: BeerFormProps) {
         </div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Cadastrar Novo Lote</h2>
       </div>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="beer-name">
             Nome da Cerveja
@@ -56,6 +59,20 @@ export function BeerForm({ onAdd }: BeerFormProps) {
             placeholder="Ex: IPA Artesanal"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="w-full h-11 px-3 bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="sku">
+            SKU
+          </label>
+          <input
+            id="sku"
+            type="text"
+            placeholder="Ex: SKU-001"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
             className="w-full h-11 px-3 bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-2 focus:ring-primary focus:border-primary rounded-lg text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
           />
         </div>
