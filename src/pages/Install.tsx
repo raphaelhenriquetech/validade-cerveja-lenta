@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Download, Smartphone, Monitor, Apple, CheckCircle2, ArrowLeft, Share, MoreVertical, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Install = () => {
   const navigate = useNavigate();
@@ -47,10 +48,13 @@ const Install = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 p-4 md:p-8">
         <div className="max-w-2xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate('/')} className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+          <div className="flex items-center justify-between mb-6">
+            <Button variant="ghost" onClick={() => navigate('/')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <ThemeToggle />
+          </div>
 
           <div className="text-center mb-8">
             <div className="mx-auto w-20 h-20 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg">

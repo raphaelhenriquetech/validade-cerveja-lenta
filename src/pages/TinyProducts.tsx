@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Search, RefreshCw, Loader2, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import Footer from '@/components/Footer';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface TinyProduct {
   id: string;
@@ -111,10 +112,11 @@ const TinyProducts = () => {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
               <Package className="h-6 w-6" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground tracking-tight">Produtos Olist Tiny</h1>
               <p className="text-sm text-muted-foreground">Consulta de produtos do ERP</p>
             </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>

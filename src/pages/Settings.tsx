@@ -10,6 +10,7 @@ import { ArrowLeft, Mail, Plus, Trash2, Send, Loader2, Settings as SettingsIcon,
 import { ActivityHistory } from '@/components/ActivityHistory';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
 import Footer from '@/components/Footer';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { z } from 'zod';
 
 const emailSchema = z.object({
@@ -312,10 +313,11 @@ const Settings = () => {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
               <SettingsIcon className="h-6 w-6" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-bold text-foreground tracking-tight">Configurações</h1>
               <p className="text-sm text-muted-foreground">Gerenciar emails e WhatsApp para relatórios</p>
             </div>
+            <ThemeToggle />
           </div>
         </div>
       </header>
