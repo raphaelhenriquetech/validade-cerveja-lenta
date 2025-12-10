@@ -10,9 +10,10 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { ReportGenerator } from '@/components/ReportGenerator';
 import Footer from '@/components/Footer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
-  const { batches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync } = useBeers();
+  const { batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, toggleArchive } = useBeers();
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState('all');
@@ -99,13 +100,42 @@ const Index = () => {
             <BeerForm onAdd={addBatch} />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <BeerList 
-              batches={batches} 
-              onDeleteBatch={deleteBatch} 
-              onUpdateBatch={updateBatch}
-              onToggleOlistSync={toggleOlistSync}
-              filter={filter} 
-            />
+            <Tabs defaultValue="active" className="w-full">
+              <TabsList className="mb-4">
+                <TabsTrigger value="active" className="gap-2">
+                  Lotes Ativos
+                  <span className="bg-primary/20 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {batches.length}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="archived" className="gap-2">
+                  Lotes Arquivados
+                  <span className="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {archivedBatches.length}
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="active">
+                <BeerList 
+                  batches={batches} 
+                  onDeleteBatch={deleteBatch} 
+                  onUpdateBatch={updateBatch}
+                  onToggleOlistSync={toggleOlistSync}
+                  onToggleArchive={toggleArchive}
+                  filter={filter} 
+                />
+              </TabsContent>
+              <TabsContent value="archived">
+                <BeerList 
+                  batches={archivedBatches} 
+                  onDeleteBatch={deleteBatch} 
+                  onUpdateBatch={updateBatch}
+                  onToggleArchive={toggleArchive}
+                  filter="all"
+                  isArchivedView={true}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>

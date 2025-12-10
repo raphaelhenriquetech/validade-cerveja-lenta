@@ -49,6 +49,8 @@ export type Database = {
       }
       beer_batches: {
         Row: {
+          archived: boolean | null
+          archived_at: string | null
           beer_name: string
           created_at: string | null
           expiration_date: string
@@ -60,6 +62,8 @@ export type Database = {
           sku: string | null
         }
         Insert: {
+          archived?: boolean | null
+          archived_at?: string | null
           beer_name: string
           created_at?: string | null
           expiration_date: string
@@ -71,6 +75,8 @@ export type Database = {
           sku?: string | null
         }
         Update: {
+          archived?: boolean | null
+          archived_at?: string | null
           beer_name?: string
           created_at?: string | null
           expiration_date?: string

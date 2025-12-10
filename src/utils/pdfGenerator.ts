@@ -9,6 +9,7 @@ interface BeerBatch {
   lot: string;
   quantity: number;
   expiration_date: string;
+  archived?: boolean;
 }
 
 interface CategoryData {
@@ -26,13 +27,16 @@ const getDaysUntilExpiration = (expirationDate: string): number => {
 };
 
 const categorizeBatches = (batches: BeerBatch[]): CategoryData[] => {
+  // Filter out archived batches
+  const activeBatches = batches.filter(batch => !batch.archived);
+  
   const expired: BeerBatch[] = [];
   const critical: BeerBatch[] = [];
   const attention: BeerBatch[] = [];
   const alert: BeerBatch[] = [];
   const ok: BeerBatch[] = [];
 
-  batches.forEach(batch => {
+  activeBatches.forEach(batch => {
     const days = getDaysUntilExpiration(batch.expiration_date);
     if (days < 0) {
       expired.push(batch);
@@ -153,10 +157,12 @@ export const generateExpirationReportPDF = (batches: BeerBatch[]): void => {
     yPosition += 6;
   });
   
-  // Total geral
+  // Total geral (only active batches)
+  const activeBatchCount = batches.filter(b => !b.archived).length;
   yPosition += 2;
   doc.setFont('helvetica', 'bold');
-  doc.text(`Total: ${batches.length} lote${batches.length !== 1 ? 's' : ''} cadastrado${batches.length !== 1 ? 's' : ''}`, 24, yPosition);
+  doc.text(`Total: ${activeBatchCount} lote${activeBatchCount !== 1 ? 's' : ''} cadastrado${activeBatchCount !== 1 ? 's' : ''}`, 24, yPosition);
+  doc.setFont('helvetica', 'normal');
   doc.setFont('helvetica', 'normal');
   
   // Check if we have any data to show
