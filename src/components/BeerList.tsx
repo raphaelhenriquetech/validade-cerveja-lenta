@@ -309,124 +309,146 @@ export function BeerList({
                     </div>
                   )}
                   
-                  {/* Actions */}
-                  <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
-                    {!isArchivedView && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-9 px-3"
-                          onClick={() => {
-                            setEditingBatch(batch);
-                            setEditQuantity(batch.quantity.toString());
-                            setEditBeerName(batch.beer_name);
-                            setEditExpirationDate(batch.expiration_date);
-                            setEditSku(batch.sku || '');
-                          }}
-                        >
-                          <Pencil className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
+                  {/* Actions - Icon only buttons with tooltips */}
+                  <TooltipProvider>
+                    <div className="flex items-center justify-between border-t border-border pt-3">
+                      <div className="flex items-center gap-2">
+                        {!isArchivedView && (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-9 p-0"
+                                  onClick={() => {
+                                    setEditingBatch(batch);
+                                    setEditQuantity(batch.quantity.toString());
+                                    setEditBeerName(batch.beer_name);
+                                    setEditExpirationDate(batch.expiration_date);
+                                    setEditSku(batch.sku || '');
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Editar</TooltipContent>
+                            </Tooltip>
 
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-9 px-3"
-                          onClick={() => handleSyncToTiny(batch)}
-                          disabled={!batch.sku || isSyncing}
-                        >
-                          <RefreshCw className={cn("h-4 w-4 mr-1", isSyncing && "animate-spin")} />
-                          Sync
-                        </Button>
-                      </>
-                    )}
-                    
-                    {/* Archive/Unarchive */}
-                    {onToggleArchive && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "h-9 px-3",
-                              isArchivedView 
-                                ? "text-green-600 hover:text-green-700 dark:text-green-400"
-                                : "text-amber-600 hover:text-amber-700 dark:text-amber-400"
-                            )}
-                          >
-                            {isArchivedView ? (
-                              <>
-                                <ArchiveRestore className="h-4 w-4 mr-1" />
-                                Restaurar
-                              </>
-                            ) : (
-                              <>
-                                <Archive className="h-4 w-4 mr-1" />
-                                Arquivar
-                              </>
-                            )}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              {isArchivedView ? 'Desarquivar lote?' : 'Arquivar lote?'}
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {isArchivedView 
-                                ? `Tem certeza que deseja desarquivar o lote "${batch.lot}" da cerveja "${batch.beer_name}"?`
-                                : `Tem certeza que deseja arquivar o lote "${batch.lot}" da cerveja "${batch.beer_name}"?`
-                              }
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => onToggleArchive(batch.id, batch.archived || false, { 
-                                beer_name: batch.beer_name, 
-                                lot: batch.lot 
-                              })}
-                              className={cn(
-                                isArchivedView 
-                                  ? "bg-green-500 hover:bg-green-600"
-                                  : "bg-amber-500 hover:bg-amber-600"
-                              )}
-                            >
-                              {isArchivedView ? 'Desarquivar' : 'Arquivar'}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-9 p-0"
+                                  onClick={() => handleSyncToTiny(batch)}
+                                  disabled={!batch.sku || isSyncing}
+                                >
+                                  <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Sincronizar Tiny</TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {/* Archive/Unarchive */}
+                        {onToggleArchive && (
+                          <AlertDialog>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className={cn(
+                                      "h-9 w-9 p-0",
+                                      isArchivedView 
+                                        ? "text-green-600 hover:text-green-700 dark:text-green-400"
+                                        : "text-amber-600 hover:text-amber-700 dark:text-amber-400"
+                                    )}
+                                  >
+                                    {isArchivedView ? (
+                                      <ArchiveRestore className="h-4 w-4" />
+                                    ) : (
+                                      <Archive className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </AlertDialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent>{isArchivedView ? 'Restaurar' : 'Arquivar'}</TooltipContent>
+                            </Tooltip>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  {isArchivedView ? 'Desarquivar lote?' : 'Arquivar lote?'}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {isArchivedView 
+                                    ? `Tem certeza que deseja desarquivar o lote "${batch.lot}" da cerveja "${batch.beer_name}"?`
+                                    : `Tem certeza que deseja arquivar o lote "${batch.lot}" da cerveja "${batch.beer_name}"?`
+                                  }
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => onToggleArchive(batch.id, batch.archived || false, { 
+                                    beer_name: batch.beer_name, 
+                                    lot: batch.lot 
+                                  })}
+                                  className={cn(
+                                    isArchivedView 
+                                      ? "bg-green-500 hover:bg-green-600"
+                                      : "bg-amber-500 hover:bg-amber-600"
+                                  )}
+                                >
+                                  {isArchivedView ? 'Desarquivar' : 'Arquivar'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
 
-                    {/* Delete */}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-9 px-3 text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{batch.beer_name}"?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => onDeleteBatch(batch.id, { beer_name: batch.beer_name, lot: batch.lot })}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                        {/* Delete */}
+                        <AlertDialog>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-9 p-0 text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>Excluir</TooltipContent>
+                          </Tooltip>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{batch.beer_name}"?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => onDeleteBatch(batch.id, { beer_name: batch.beer_name, lot: batch.lot })}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </TooltipProvider>
                 </div>
               );
             })}
