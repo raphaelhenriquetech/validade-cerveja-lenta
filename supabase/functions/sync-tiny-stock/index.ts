@@ -68,17 +68,26 @@ serve(async (req) => {
     console.log(`[sync-tiny-stock] Found product ID: ${idProduto}`);
 
     // Step 2: Update stock in Tiny using type 'B' (balance/balanço)
-    const updateParams = new URLSearchParams({
-      token: TINY_API_TOKEN,
-      id: idProduto,
+    // API Tiny requires 'estoque' parameter as JSON object in form data
+    const estoqueData = JSON.stringify({
+      idProduto: idProduto,
       tipo: 'B', // B = Balanço (set absolute value)
-      quantidade: quantity.toString(),
-      formato: 'JSON',
+      quantidade: quantity.toString()
     });
 
+    const formData = `token=${TINY_API_TOKEN}&estoque=${encodeURIComponent(estoqueData)}&formato=JSON`;
+
+    console.log(`[sync-tiny-stock] Sending estoque update:`, estoqueData);
+
     const updateResponse = await fetch(
-      `https://api.tiny.com.br/api2/produto.atualizar.estoque.php?${updateParams.toString()}`,
-      { method: 'POST' }
+      'https://api.tiny.com.br/api2/produto.atualizar.estoque.php',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData
+      }
     );
 
     if (!updateResponse.ok) {
