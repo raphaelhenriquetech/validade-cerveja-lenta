@@ -5,3 +5,9 @@ verify_jwt = true
 
 [functions.send-whatsapp-report]
 verify_jwt = true
+
+[functions.get-tiny-products]
+verify_jwt = false
+
+[functions.sync-tiny-stock]
+verify_jwt = false

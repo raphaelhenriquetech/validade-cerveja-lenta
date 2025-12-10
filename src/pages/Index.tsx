@@ -13,7 +13,7 @@ import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
-  const { batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, toggleArchive } = useBeers();
+  const { batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, toggleArchive, syncStockToTiny, syncingSkus } = useBeers();
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState('all');
@@ -122,6 +122,8 @@ const Index = () => {
                   onUpdateBatch={updateBatch}
                   onToggleOlistSync={toggleOlistSync}
                   onToggleArchive={toggleArchive}
+                  onSyncToTiny={syncStockToTiny}
+                  syncingSkus={syncingSkus}
                   filter={filter} 
                 />
               </TabsContent>

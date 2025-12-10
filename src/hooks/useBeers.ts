@@ -41,6 +41,7 @@ export function useBeers() {
   const [batches, setBatches] = useState<BeerBatch[]>([]);
   const [archivedBatches, setArchivedBatches] = useState<BeerBatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncingSkus, setSyncingSkus] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const fetchBatches = useCallback(async () => {
@@ -53,6 +54,7 @@ export function useBeers() {
 
       if (error) throw error;
       setBatches(data || []);
+      return data || [];
     } catch (error: any) {
       console.error('Error fetching batches:', error);
       toast({
@@ -60,6 +62,7 @@ export function useBeers() {
         description: error.message,
         variant: 'destructive',
       });
+      return [];
     } finally {
       setLoading(false);
     }
@@ -90,6 +93,81 @@ export function useBeers() {
     fetchArchivedBatches();
   }, [fetchBatches, fetchArchivedBatches]);
 
+  // Calculate total quantity for a SKU across all active batches
+  const calculateTotalQuantityBySku = useCallback((sku: string, currentBatches: BeerBatch[]) => {
+    return currentBatches
+      .filter(b => b.sku === sku && !b.archived)
+      .reduce((total, batch) => total + batch.quantity, 0);
+  }, []);
+
+  // Sync stock to Tiny ERP
+  const syncStockToTiny = useCallback(async (sku: string, batchInfo?: { beer_name: string; lot: string }) => {
+    if (!sku) {
+      toast({
+        title: 'SKU não informado',
+        description: 'O lote precisa ter um SKU cadastrado para sincronizar com o Tiny',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    setSyncingSkus(prev => new Set(prev).add(sku));
+
+    try {
+      // Get fresh batch data
+      const { data: currentBatches } = await supabase
+        .from('beer_batches')
+        .select('*')
+        .eq('archived', false);
+
+      const totalQuantity = calculateTotalQuantityBySku(sku, currentBatches || []);
+
+      console.log(`[syncStockToTiny] Syncing SKU: ${sku}, total quantity: ${totalQuantity}`);
+
+      const response = await supabase.functions.invoke('sync-tiny-stock', {
+        body: { sku, quantity: totalQuantity }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const data = response.data;
+
+      if (!data.success) {
+        throw new Error(data.error || 'Erro ao sincronizar com Tiny');
+      }
+
+      toast({
+        title: 'Estoque sincronizado',
+        description: `SKU ${sku}: ${totalQuantity} unidades enviadas ao Tiny`,
+      });
+
+      await logActivity(
+        'tiny_stock_synced',
+        'beer_batch',
+        null,
+        `Estoque sincronizado com Tiny: SKU ${sku} - ${totalQuantity} unidades${batchInfo ? ` (${batchInfo.beer_name} - Lote ${batchInfo.lot})` : ''}`
+      );
+
+      return true;
+    } catch (error: any) {
+      console.error('[syncStockToTiny] Error:', error);
+      toast({
+        title: 'Erro ao sincronizar',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setSyncingSkus(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(sku);
+        return newSet;
+      });
+    }
+  }, [toast, calculateTotalQuantityBySku]);
+
   const addBatch = async (beerName: string, lot: string, quantity: number, expirationDate: string, sku?: string) => {
     try {
       const { error } = await supabase
@@ -116,7 +194,12 @@ export function useBeers() {
         `Novo lote cadastrado: ${beerName} - Lote ${lot}${sku ? ` - SKU ${sku}` : ''} (${quantity} un.)`
       );
 
-      fetchBatches();
+      await fetchBatches();
+
+      // Auto sync to Tiny if SKU is provided
+      if (sku) {
+        await syncStockToTiny(sku, { beer_name: beerName, lot });
+      }
     } catch (error: any) {
       console.error('Error adding batch:', error);
       toast({
@@ -129,6 +212,13 @@ export function useBeers() {
 
   const deleteBatch = async (batchId: string, batchInfo?: { beer_name: string; lot: string }) => {
     try {
+      // Get batch info before deleting for sync
+      const { data: batchToDelete } = await supabase
+        .from('beer_batches')
+        .select('*')
+        .eq('id', batchId)
+        .single();
+
       const { error } = await supabase
         .from('beer_batches')
         .delete()
@@ -150,8 +240,13 @@ export function useBeers() {
         );
       }
 
-      fetchBatches();
-      fetchArchivedBatches();
+      await fetchBatches();
+      await fetchArchivedBatches();
+
+      // Sync to Tiny if deleted batch had SKU
+      if (batchToDelete?.sku) {
+        await syncStockToTiny(batchToDelete.sku, batchInfo);
+      }
     } catch (error: any) {
       console.error('Error deleting batch:', error);
       toast({
@@ -201,8 +296,22 @@ export function useBeers() {
         );
       }
 
-      fetchBatches();
-      fetchArchivedBatches();
+      await fetchBatches();
+      await fetchArchivedBatches();
+
+      // Sync to Tiny if quantity changed and has SKU
+      const quantityChanged = updates.quantity !== undefined && oldBatch && updates.quantity !== oldBatch.quantity;
+      const skuChanged = updates.sku !== undefined && oldBatch && updates.sku !== oldBatch.sku;
+      const currentSku = updates.sku !== undefined ? updates.sku : oldBatch?.sku;
+
+      if ((quantityChanged || skuChanged) && currentSku) {
+        await syncStockToTiny(currentSku, oldBatch ? { beer_name: oldBatch.beer_name, lot: oldBatch.lot } : undefined);
+      }
+
+      // If SKU was removed, sync old SKU to update Tiny
+      if (oldBatch?.sku && updates.sku === null) {
+        await syncStockToTiny(oldBatch.sku, { beer_name: oldBatch.beer_name, lot: oldBatch.lot });
+      }
     } catch (error: any) {
       console.error('Error updating batch:', error);
       toast({
@@ -256,6 +365,13 @@ export function useBeers() {
 
   const toggleArchive = async (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => {
     try {
+      // Get batch info before archiving for sync
+      const { data: batchToArchive } = await supabase
+        .from('beer_batches')
+        .select('*')
+        .eq('id', batchId)
+        .single();
+
       const newState = !currentState;
       const archivedAt = newState ? new Date().toISOString() : null;
 
@@ -283,8 +399,13 @@ export function useBeers() {
           : `Lote desarquivado: ${batchInfo.beer_name} - Lote ${batchInfo.lot}`
       );
 
-      fetchBatches();
-      fetchArchivedBatches();
+      await fetchBatches();
+      await fetchArchivedBatches();
+
+      // Sync to Tiny when archiving/unarchiving (stock changes)
+      if (batchToArchive?.sku) {
+        await syncStockToTiny(batchToArchive.sku, batchInfo);
+      }
     } catch (error: any) {
       console.error('Error toggling archive:', error);
       toast({
@@ -304,6 +425,8 @@ export function useBeers() {
     updateBatch, 
     toggleOlistSync, 
     toggleArchive,
+    syncStockToTiny,
+    syncingSkus,
     refetch: fetchBatches,
     refetchArchived: fetchArchivedBatches
   };
