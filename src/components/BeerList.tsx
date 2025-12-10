@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw, Scale, Loader2, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
@@ -32,6 +32,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { BeerBatch } from '@/hooks/useBeers';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface BeerListProps {
   batches: BeerBatch[];
@@ -62,7 +64,11 @@ export function BeerList({
   const [editExpirationDate, setEditExpirationDate] = useState('');
   const [editSku, setEditSku] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
+  const [isComparing, setIsComparing] = useState(false);
+  const [hasCompared, setHasCompared] = useState(false);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
 
   // First filter by search term
   const searchFilteredBatches = useMemo(() => {
@@ -125,10 +131,83 @@ export function BeerList({
     return groups;
   }, [sortedBatches]);
 
+  // Calculate local stock by SKU (sum of all active batches per SKU)
+  const localStockBySku = useMemo(() => {
+    const stockMap: Record<string, number> = {};
+    batches.forEach(batch => {
+      if (batch.sku) {
+        const cleanSku = batch.sku.trim();
+        stockMap[cleanSku] = (stockMap[cleanSku] || 0) + batch.quantity;
+      }
+    });
+    return stockMap;
+  }, [batches]);
+
   const handleSyncToTiny = async (batch: BeerBatch) => {
     if (onSyncToTiny && batch.sku) {
       await onSyncToTiny(batch.sku, { beer_name: batch.beer_name, lot: batch.lot });
     }
+  };
+
+  const handleCompareStock = async () => {
+    setIsComparing(true);
+    try {
+      // Get unique SKUs from active batches
+      const uniqueSkus = [...new Set(batches.map(b => b.sku?.trim()).filter(Boolean))] as string[];
+      
+      if (uniqueSkus.length === 0) {
+        toast({
+          title: 'Nenhum SKU encontrado',
+          description: 'Não há lotes com SKU cadastrado para comparar.',
+        });
+        setIsComparing(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('compare-tiny-stock', {
+        body: { skus: uniqueSkus }
+      });
+
+      if (error) throw error;
+
+      setTinyStocks(data.stocks || {});
+      setHasCompared(true);
+
+      // Count divergences
+      const divergencias = Object.keys(data.stocks || {}).filter(sku => {
+        const tinyStock = data.stocks[sku];
+        const localStock = localStockBySku[sku] || 0;
+        return tinyStock !== null && tinyStock !== localStock;
+      });
+
+      toast({
+        title: divergencias.length > 0 
+          ? `${divergencias.length} divergência(s) encontrada(s)` 
+          : 'Estoque OK!',
+        description: divergencias.length > 0 
+          ? 'Verifique os itens marcados com "Divergente"'
+          : 'Todos os estoques estão sincronizados com o Tiny',
+        variant: divergencias.length > 0 ? 'destructive' : 'default',
+      });
+    } catch (error) {
+      console.error('Erro ao comparar estoque:', error);
+      toast({ 
+        title: 'Erro', 
+        description: error instanceof Error ? error.message : 'Erro ao comparar estoque', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsComparing(false);
+    }
+  };
+
+  // Check if a SKU has stock divergence
+  const hasDivergence = (sku: string | null | undefined): boolean => {
+    if (!hasCompared || !sku) return false;
+    const cleanSku = sku.trim();
+    const tinyStock = tinyStocks[cleanSku];
+    const localStock = localStockBySku[cleanSku] || 0;
+    return tinyStock !== null && tinyStock !== undefined && tinyStock !== localStock;
   };
 
   return (
@@ -168,23 +247,43 @@ export function BeerList({
           </div>
         </div>
         
-        {/* Search field */}
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Buscar cerveja ou lote..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-primary focus:border-primary rounded-lg pl-10 pr-10 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+        {/* Search field and Compare button */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Buscar cerveja ou lote..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-primary focus:border-primary rounded-lg pl-10 pr-10 py-2 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          
+          {/* Compare Stock Button - Desktop only, Active view only */}
+          {!isMobile && !isArchivedView && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCompareStock}
+              disabled={isComparing}
+              className="gap-2 whitespace-nowrap"
             >
-              <X className="h-4 w-4" />
-            </button>
+              {isComparing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Scale className="h-4 w-4" />
+              )}
+              Fazer Comparativo
+            </Button>
           )}
         </div>
       </div>
@@ -513,8 +612,26 @@ export function BeerList({
                         <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
                           {batch.lot}
                         </TableCell>
-                        <TableCell className="p-4 text-sm text-gray-900 dark:text-white font-semibold text-center">
-                          {batch.quantity}
+                        <TableCell className="p-4 text-sm text-gray-900 dark:text-white font-semibold">
+                          <div className="flex items-center justify-center gap-2">
+                            <span>{batch.quantity}</span>
+                            {hasDivergence(batch.sku) && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge variant="destructive" className="text-xs cursor-help gap-1">
+                                      <AlertTriangle className="h-3 w-3" />
+                                      Divergente
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Sistema: {localStockBySku[batch.sku!.trim()]} un.</p>
+                                    <p>Tiny: {tinyStocks[batch.sku!.trim()]} un.</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400">
                           {format(parseISO(batch.expiration_date), 'dd/MM/yyyy', { locale: ptBR })}

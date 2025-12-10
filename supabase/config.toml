@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.sync-tiny-stock]
 verify_jwt = false
+
+[functions.compare-tiny-stock]
+verify_jwt = false
