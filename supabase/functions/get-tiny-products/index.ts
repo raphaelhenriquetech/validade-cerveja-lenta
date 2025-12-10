@@ -86,16 +86,51 @@ serve(async (req) => {
 
     console.log(`Found ${produtos.length} products, total: ${totalRegistros}, pages: ${totalPaginas}`);
 
-    // Format products for frontend
-    const formattedProducts = produtos.map((item: any) => ({
-      id: item.produto?.id,
-      codigo: item.produto?.codigo,
-      nome: item.produto?.nome,
-      preco: item.produto?.preco,
-      preco_custo: item.produto?.preco_custo,
-      situacao: item.produto?.situacao,
-      unidade: item.produto?.unidade,
-    }));
+    // Format products and fetch stock for each
+    console.log('Fetching stock for each product...');
+    
+    const formattedProducts = await Promise.all(
+      produtos.map(async (item: any) => {
+        const productId = item.produto?.id;
+        let estoque = null;
+        
+        // Fetch stock for this product
+        try {
+          const estoqueParams = new URLSearchParams({
+            token: TINY_API_TOKEN,
+            id: productId,
+            formato: 'JSON',
+          });
+          
+          const estoqueResponse = await fetch(
+            `https://api.tiny.com.br/api2/produto.obter.estoque.php?${estoqueParams.toString()}`,
+            { method: 'GET' }
+          );
+          
+          if (estoqueResponse.ok) {
+            const estoqueData = await estoqueResponse.json();
+            if (estoqueData.retorno?.status === 'OK') {
+              estoque = estoqueData.retorno?.produto?.saldo || 0;
+            }
+          }
+        } catch (estoqueError) {
+          console.error(`Error fetching stock for product ${productId}:`, estoqueError);
+        }
+        
+        return {
+          id: productId,
+          codigo: item.produto?.codigo,
+          nome: item.produto?.nome,
+          preco: item.produto?.preco,
+          preco_custo: item.produto?.preco_custo,
+          situacao: item.produto?.situacao,
+          unidade: item.produto?.unidade,
+          estoque: estoque,
+        };
+      })
+    );
+
+    console.log('Products with stock fetched successfully');
 
     return new Response(
       JSON.stringify({

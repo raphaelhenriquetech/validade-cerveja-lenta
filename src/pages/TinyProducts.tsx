@@ -18,6 +18,7 @@ interface TinyProduct {
   preco_custo: string;
   situacao: string;
   unidade: string;
+  estoque: number | null;
 }
 
 interface TinyResponse {
@@ -201,6 +202,7 @@ const TinyProducts = () => {
                         <TableHead className="text-right font-semibold text-foreground">Preço Custo</TableHead>
                         <TableHead className="text-right font-semibold text-foreground">Preço Venda</TableHead>
                         <TableHead className="text-center font-semibold text-foreground">Unidade</TableHead>
+                        <TableHead className="text-center font-semibold text-foreground">Estoque</TableHead>
                         <TableHead className="text-center font-semibold text-foreground">Situação</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -216,6 +218,16 @@ const TinyProducts = () => {
                           <TableCell className="text-right">{formatPrice(product.preco_custo)}</TableCell>
                           <TableCell className="text-right font-semibold">{formatPrice(product.preco)}</TableCell>
                           <TableCell className="text-center">{product.unidade || '-'}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={`font-semibold ${
+                              product.estoque === null ? 'text-muted-foreground' :
+                              product.estoque === 0 ? 'text-destructive' :
+                              product.estoque <= 5 ? 'text-orange-500' :
+                              'text-foreground'
+                            }`}>
+                              {product.estoque !== null ? product.estoque : 'N/D'}
+                            </span>
+                          </TableCell>
                           <TableCell className="text-center">
                             <Badge 
                               className={product.situacao === 'A' 
