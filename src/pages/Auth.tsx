@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Beer, Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const authSchema = z.object({
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
@@ -153,7 +154,12 @@ const Auth = () => {
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-[#f6f6f8] p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#f6f6f8] dark:bg-background p-4 sm:p-6 lg:p-8 relative">
+        {/* Theme Toggle */}
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        
         <div className="flex w-full max-w-md flex-col items-start gap-2">
           {/* Mobile Logo */}
           <div className="flex items-center gap-3 pb-4 lg:hidden">

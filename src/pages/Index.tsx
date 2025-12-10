@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ReportGenerator } from '@/components/ReportGenerator';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Index = () => {
   const { batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, toggleArchive, syncStockToTiny, syncingSkus } = useBeers();
@@ -75,6 +76,7 @@ const Index = () => {
                 <Settings className="h-5 w-5" />
               </Button>
             </Link>
+            <ThemeToggle />
             <Button 
               variant="ghost" 
               size="icon" 
