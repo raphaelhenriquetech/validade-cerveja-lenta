@@ -31,6 +31,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BeerBatch } from '@/hooks/useBeers';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BeerListProps {
   batches: BeerBatch[];
@@ -61,6 +62,7 @@ export function BeerList({
   const [editExpirationDate, setEditExpirationDate] = useState('');
   const [editSku, setEditSku] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useIsMobile();
 
   // First filter by search term
   const searchFilteredBatches = useMemo(() => {
@@ -213,255 +215,474 @@ export function BeerList({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50 dark:bg-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
-                <TableHead className="p-4 pl-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Cerveja</TableHead>
-                <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">SKU</TableHead>
-                <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Lote</TableHead>
-                <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider text-center">Qtd</TableHead>
-                <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Validade</TableHead>
-                {isArchivedView ? (
-                  <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Arquivado em</TableHead>
-                ) : (
-                  <>
-                    <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Status</TableHead>
-                    <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Olist</TableHead>
-                  </>
-                )}
-                <TableHead className="p-4 pr-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody className="divide-y divide-gray-200 dark:divide-zinc-800">
-              {Object.entries(groupedBatches).map(([beerName, beerBatches]) =>
-                beerBatches.map((batch, index) => {
-                  const days = getDaysUntilExpiration(batch.expiration_date);
-                  const isUrgent = days <= 7 && !isArchivedView;
-                  const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
+        isMobile ? (
+          // Mobile: Cards
+          <div className="space-y-3 p-4">
+            {sortedBatches.map((batch) => {
+              const days = getDaysUntilExpiration(batch.expiration_date);
+              const isUrgent = days <= 7 && !isArchivedView;
+              const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
+              
+              return (
+                <div 
+                  key={batch.id}
+                  className={cn(
+                    "bg-card rounded-xl border p-4 space-y-3",
+                    isUrgent 
+                      ? "border-red-200 dark:border-red-800/50 bg-red-50/50 dark:bg-red-900/10" 
+                      : "border-border"
+                  )}
+                >
+                  {/* Header: Nome da cerveja + Badge de status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className={cn(
+                        "w-2 h-2 rounded-full flex-shrink-0",
+                        isArchivedView ? "bg-muted-foreground" : "bg-primary"
+                      )} />
+                      <span className="font-medium text-foreground truncate">{batch.beer_name}</span>
+                    </div>
+                    {!isArchivedView && <ExpirationBadge expirationDate={batch.expiration_date} />}
+                  </div>
                   
-                  return (
-                    <TableRow 
-                      key={batch.id}
-                      className={cn(
-                        "transition-colors",
-                        isUrgent && "bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20",
-                        !isUrgent && "hover:bg-gray-50 dark:hover:bg-zinc-800/50"
-                      )}
-                    >
-                      {index === 0 ? (
-                        <TableCell rowSpan={beerBatches.length} className="p-4 pl-6 text-sm text-gray-900 dark:text-white font-medium align-top">
-                          <div className="flex items-center gap-3">
-                            <span className={cn(
-                              "w-2 h-2 rounded-full flex-shrink-0",
-                              isArchivedView ? "bg-gray-400" : "bg-primary"
-                            )}></span>
-                            <span>{beerName}</span>
-                            {beerBatches.length > 1 && (
-                              <Badge variant="secondary" className="text-xs">
-                                {beerBatches.length} lotes
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                      ) : null}
-                      <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                        {batch.sku || '—'}
-                      </TableCell>
-                      <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                        {batch.lot}
-                      </TableCell>
-                      <TableCell className="p-4 text-sm text-gray-900 dark:text-white font-semibold text-center">
-                        {batch.quantity}
-                      </TableCell>
-                      <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400">
-                        {format(parseISO(batch.expiration_date), 'dd/MM/yyyy', { locale: ptBR })}
-                      </TableCell>
-                      {isArchivedView ? (
-                        <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400">
-                          {batch.archived_at 
-                            ? format(new Date(batch.archived_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
-                            : '—'}
-                        </TableCell>
-                      ) : (
-                        <>
-                          <TableCell className="p-4">
-                            <ExpirationBadge expirationDate={batch.expiration_date} />
-                          </TableCell>
-                          <TableCell className="p-4">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex items-center gap-2 cursor-pointer">
-                                    <Checkbox
-                                      checked={batch.olist_synced || false}
-                                      onCheckedChange={() => {
-                                        if (onToggleOlistSync) {
-                                          onToggleOlistSync(batch.id, batch.olist_synced || false, {
-                                            beer_name: batch.beer_name,
-                                            lot: batch.lot,
-                                          });
-                                        }
-                                      }}
-                                      className={cn(
-                                        batch.olist_synced && "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                                      )}
-                                    />
-                                    <span className={cn(
-                                      "text-xs whitespace-nowrap",
-                                      batch.olist_synced 
-                                        ? "text-green-600 dark:text-green-400 font-medium" 
-                                        : "text-gray-500 dark:text-gray-400"
-                                    )}>
-                                      {batch.olist_synced ? "Lançado ✓" : "Lançar"}
-                                    </span>
-                                  </div>
-                                </TooltipTrigger>
-                                {batch.olist_synced && batch.olist_synced_at && (
-                                  <TooltipContent>
-                                    <p>Lançado em: {format(new Date(batch.olist_synced_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
-                                  </TooltipContent>
-                                )}
-                              </Tooltip>
-                            </TooltipProvider>
-                          </TableCell>
-                        </>
-                      )}
-                      <TableCell className="p-4 pr-6">
-                        <div className="flex items-center gap-2">
-                          {!isArchivedView && (
-                            <>
-                              <button 
-                                className="text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors"
-                                onClick={() => {
-                                  setEditingBatch(batch);
-                                  setEditQuantity(batch.quantity.toString());
-                                  setEditBeerName(batch.beer_name);
-                                  setEditExpirationDate(batch.expiration_date);
-                                  setEditSku(batch.sku || '');
-                                }}
-                              >
-                                <Pencil className="h-5 w-5" />
-                              </button>
+                  {/* Info grid: SKU, Lote, Qtd, Validade */}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">SKU:</span>
+                      <span className="font-mono text-foreground">{batch.sku || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Lote:</span>
+                      <span className="font-mono text-foreground">{batch.lot}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Qtd:</span>
+                      <span className="font-semibold text-foreground">{batch.quantity} un.</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Validade:</span>
+                      <span className="text-foreground">{format(parseISO(batch.expiration_date), 'dd/MM/yyyy', { locale: ptBR })}</span>
+                    </div>
+                    {isArchivedView && batch.archived_at && (
+                      <div className="col-span-2 flex justify-between pt-1 border-t border-border">
+                        <span className="text-muted-foreground">Arquivado:</span>
+                        <span className="text-muted-foreground">{format(new Date(batch.archived_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Olist checkbox (only for active view) */}
+                  {!isArchivedView && (
+                    <div className="border-t border-border pt-3">
+                      <div 
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => {
+                          if (onToggleOlistSync) {
+                            onToggleOlistSync(batch.id, batch.olist_synced || false, {
+                              beer_name: batch.beer_name,
+                              lot: batch.lot,
+                            });
+                          }
+                        }}
+                      >
+                        <Checkbox
+                          checked={batch.olist_synced || false}
+                          onCheckedChange={() => {}}
+                          className={cn(
+                            batch.olist_synced && "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                          )}
+                        />
+                        <span className={cn(
+                          "text-sm",
+                          batch.olist_synced 
+                            ? "text-green-600 dark:text-green-400 font-medium" 
+                            : "text-muted-foreground"
+                        )}>
+                          {batch.olist_synced ? "Lançado no Olist ✓" : "Lançar no Olist"}
+                        </span>
+                        {batch.olist_synced && batch.olist_synced_at && (
+                          <span className="text-xs text-muted-foreground ml-auto">
+                            {format(new Date(batch.olist_synced_at), "dd/MM", { locale: ptBR })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-3 border-t border-border pt-3">
+                    {!isArchivedView && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-3"
+                          onClick={() => {
+                            setEditingBatch(batch);
+                            setEditQuantity(batch.quantity.toString());
+                            setEditBeerName(batch.beer_name);
+                            setEditExpirationDate(batch.expiration_date);
+                            setEditSku(batch.sku || '');
+                          }}
+                        >
+                          <Pencil className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
 
-                              {/* Sync to Tiny button */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-3"
+                          onClick={() => handleSyncToTiny(batch)}
+                          disabled={!batch.sku || isSyncing}
+                        >
+                          <RefreshCw className={cn("h-4 w-4 mr-1", isSyncing && "animate-spin")} />
+                          Sync
+                        </Button>
+                      </>
+                    )}
+                    
+                    {/* Archive/Unarchive */}
+                    {onToggleArchive && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "h-9 px-3",
+                              isArchivedView 
+                                ? "text-green-600 hover:text-green-700 dark:text-green-400"
+                                : "text-amber-600 hover:text-amber-700 dark:text-amber-400"
+                            )}
+                          >
+                            {isArchivedView ? (
+                              <>
+                                <ArchiveRestore className="h-4 w-4 mr-1" />
+                                Restaurar
+                              </>
+                            ) : (
+                              <>
+                                <Archive className="h-4 w-4 mr-1" />
+                                Arquivar
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              {isArchivedView ? 'Desarquivar lote?' : 'Arquivar lote?'}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {isArchivedView 
+                                ? `Tem certeza que deseja desarquivar o lote "${batch.lot}" da cerveja "${batch.beer_name}"?`
+                                : `Tem certeza que deseja arquivar o lote "${batch.lot}" da cerveja "${batch.beer_name}"?`
+                              }
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => onToggleArchive(batch.id, batch.archived || false, { 
+                                beer_name: batch.beer_name, 
+                                lot: batch.lot 
+                              })}
+                              className={cn(
+                                isArchivedView 
+                                  ? "bg-green-500 hover:bg-green-600"
+                                  : "bg-amber-500 hover:bg-amber-600"
+                              )}
+                            >
+                              {isArchivedView ? 'Desarquivar' : 'Arquivar'}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+
+                    {/* Delete */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-9 px-3 text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{batch.beer_name}"?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => onDeleteBatch(batch.id, { beer_name: batch.beer_name, lot: batch.lot })}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          // Desktop: Table
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50 dark:bg-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                  <TableHead className="p-4 pl-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Cerveja</TableHead>
+                  <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">SKU</TableHead>
+                  <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Lote</TableHead>
+                  <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider text-center">Qtd</TableHead>
+                  <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Validade</TableHead>
+                  {isArchivedView ? (
+                    <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Arquivado em</TableHead>
+                  ) : (
+                    <>
+                      <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Status</TableHead>
+                      <TableHead className="p-4 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Olist</TableHead>
+                    </>
+                  )}
+                  <TableHead className="p-4 pr-6 text-sm font-semibold text-gray-600 dark:text-gray-300 tracking-wider">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="divide-y divide-gray-200 dark:divide-zinc-800">
+                {Object.entries(groupedBatches).map(([beerName, beerBatches]) =>
+                  beerBatches.map((batch, index) => {
+                    const days = getDaysUntilExpiration(batch.expiration_date);
+                    const isUrgent = days <= 7 && !isArchivedView;
+                    const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
+                    
+                    return (
+                      <TableRow 
+                        key={batch.id}
+                        className={cn(
+                          "transition-colors",
+                          isUrgent && "bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50 dark:hover:bg-red-900/20",
+                          !isUrgent && "hover:bg-gray-50 dark:hover:bg-zinc-800/50"
+                        )}
+                      >
+                        {index === 0 ? (
+                          <TableCell rowSpan={beerBatches.length} className="p-4 pl-6 text-sm text-gray-900 dark:text-white font-medium align-top">
+                            <div className="flex items-center gap-3">
+                              <span className={cn(
+                                "w-2 h-2 rounded-full flex-shrink-0",
+                                isArchivedView ? "bg-gray-400" : "bg-primary"
+                              )}></span>
+                              <span>{beerName}</span>
+                              {beerBatches.length > 1 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {beerBatches.length} lotes
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                        ) : null}
+                        <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
+                          {batch.sku || '—'}
+                        </TableCell>
+                        <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
+                          {batch.lot}
+                        </TableCell>
+                        <TableCell className="p-4 text-sm text-gray-900 dark:text-white font-semibold text-center">
+                          {batch.quantity}
+                        </TableCell>
+                        <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                          {format(parseISO(batch.expiration_date), 'dd/MM/yyyy', { locale: ptBR })}
+                        </TableCell>
+                        {isArchivedView ? (
+                          <TableCell className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                            {batch.archived_at 
+                              ? format(new Date(batch.archived_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                              : '—'}
+                          </TableCell>
+                        ) : (
+                          <>
+                            <TableCell className="p-4">
+                              <ExpirationBadge expirationDate={batch.expiration_date} />
+                            </TableCell>
+                            <TableCell className="p-4">
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <button 
-                                      className={cn(
-                                        "transition-colors",
-                                        batch.sku 
-                                          ? "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" 
-                                          : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                                      )}
-                                      onClick={() => handleSyncToTiny(batch)}
-                                      disabled={!batch.sku || isSyncing}
-                                    >
-                                      <RefreshCw className={cn(
-                                        "h-5 w-5",
-                                        isSyncing && "animate-spin"
-                                      )} />
-                                    </button>
+                                    <div className="flex items-center gap-2 cursor-pointer">
+                                      <Checkbox
+                                        checked={batch.olist_synced || false}
+                                        onCheckedChange={() => {
+                                          if (onToggleOlistSync) {
+                                            onToggleOlistSync(batch.id, batch.olist_synced || false, {
+                                              beer_name: batch.beer_name,
+                                              lot: batch.lot,
+                                            });
+                                          }
+                                        }}
+                                        className={cn(
+                                          batch.olist_synced && "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                        )}
+                                      />
+                                      <span className={cn(
+                                        "text-xs whitespace-nowrap",
+                                        batch.olist_synced 
+                                          ? "text-green-600 dark:text-green-400 font-medium" 
+                                          : "text-gray-500 dark:text-gray-400"
+                                      )}>
+                                        {batch.olist_synced ? "Lançado ✓" : "Lançar"}
+                                      </span>
+                                    </div>
                                   </TooltipTrigger>
-                                  <TooltipContent>
-                                    {batch.sku 
-                                      ? isSyncing 
-                                        ? 'Sincronizando...' 
-                                        : 'Sincronizar estoque com Tiny'
-                                      : 'Adicione um SKU para sincronizar'}
-                                  </TooltipContent>
+                                  {batch.olist_synced && batch.olist_synced_at && (
+                                    <TooltipContent>
+                                      <p>Lançado em: {format(new Date(batch.olist_synced_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                                    </TooltipContent>
+                                  )}
                                 </Tooltip>
                               </TooltipProvider>
-                            </>
-                          )}
-                          
-                          {/* Archive/Unarchive button */}
-                          {onToggleArchive && (
+                            </TableCell>
+                          </>
+                        )}
+                        <TableCell className="p-4 pr-6">
+                          <div className="flex items-center gap-2">
+                            {!isArchivedView && (
+                              <>
+                                <button 
+                                  className="text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors"
+                                  onClick={() => {
+                                    setEditingBatch(batch);
+                                    setEditQuantity(batch.quantity.toString());
+                                    setEditBeerName(batch.beer_name);
+                                    setEditExpirationDate(batch.expiration_date);
+                                    setEditSku(batch.sku || '');
+                                  }}
+                                >
+                                  <Pencil className="h-5 w-5" />
+                                </button>
+
+                                {/* Sync to Tiny button */}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button 
+                                        className={cn(
+                                          "transition-colors",
+                                          batch.sku 
+                                            ? "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" 
+                                            : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                        )}
+                                        onClick={() => handleSyncToTiny(batch)}
+                                        disabled={!batch.sku || isSyncing}
+                                      >
+                                        <RefreshCw className={cn(
+                                          "h-5 w-5",
+                                          isSyncing && "animate-spin"
+                                        )} />
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {batch.sku 
+                                        ? isSyncing 
+                                          ? 'Sincronizando...' 
+                                          : 'Sincronizar estoque com Tiny'
+                                        : 'Adicione um SKU para sincronizar'}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </>
+                            )}
+                            
+                            {/* Archive/Unarchive button */}
+                            {onToggleArchive && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <button 
+                                    className={cn(
+                                      "transition-colors",
+                                      isArchivedView 
+                                        ? "text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-500"
+                                        : "text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-500"
+                                    )}
+                                    title={isArchivedView ? "Desarquivar lote" : "Arquivar lote"}
+                                  >
+                                    {isArchivedView ? (
+                                      <ArchiveRestore className="h-5 w-5" />
+                                    ) : (
+                                      <Archive className="h-5 w-5" />
+                                    )}
+                                  </button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      {isArchivedView ? 'Desarquivar lote?' : 'Arquivar lote?'}
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      {isArchivedView 
+                                        ? `Tem certeza que deseja desarquivar o lote "${batch.lot}" da cerveja "${beerName}"? O lote voltará para a lista de lotes ativos.`
+                                        : `Tem certeza que deseja arquivar o lote "${batch.lot}" da cerveja "${beerName}"? Você poderá desarquivá-lo a qualquer momento.`
+                                      }
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => onToggleArchive(batch.id, batch.archived || false, { 
+                                        beer_name: batch.beer_name, 
+                                        lot: batch.lot 
+                                      })}
+                                      className={cn(
+                                        isArchivedView 
+                                          ? "bg-green-500 hover:bg-green-600"
+                                          : "bg-amber-500 hover:bg-amber-600"
+                                      )}
+                                    >
+                                      {isArchivedView ? 'Desarquivar' : 'Arquivar'}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <button 
-                                  className={cn(
-                                    "transition-colors",
-                                    isArchivedView 
-                                      ? "text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-500"
-                                      : "text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-500"
-                                  )}
-                                  title={isArchivedView ? "Desarquivar lote" : "Arquivar lote"}
-                                >
-                                  {isArchivedView ? (
-                                    <ArchiveRestore className="h-5 w-5" />
-                                  ) : (
-                                    <Archive className="h-5 w-5" />
-                                  )}
+                                <button className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-500 transition-colors">
+                                  <Trash2 className="h-5 w-5" />
                                 </button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    {isArchivedView ? 'Desarquivar lote?' : 'Arquivar lote?'}
-                                  </AlertDialogTitle>
+                                  <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    {isArchivedView 
-                                      ? `Tem certeza que deseja desarquivar o lote "${batch.lot}" da cerveja "${beerName}"? O lote voltará para a lista de lotes ativos.`
-                                      : `Tem certeza que deseja arquivar o lote "${batch.lot}" da cerveja "${beerName}"? Você poderá desarquivá-lo a qualquer momento.`
-                                    }
+                                    Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{beerName}"?
+                                    Esta ação não pode ser desfeita.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => onToggleArchive(batch.id, batch.archived || false, { 
-                                      beer_name: batch.beer_name, 
-                                      lot: batch.lot 
-                                    })}
-                                    className={cn(
-                                      isArchivedView 
-                                        ? "bg-green-500 hover:bg-green-600"
-                                        : "bg-amber-500 hover:bg-amber-600"
-                                    )}
+                                    onClick={() => onDeleteBatch(batch.id, { beer_name: batch.beer_name, lot: batch.lot })}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >
-                                    {isArchivedView ? 'Desarquivar' : 'Arquivar'}
+                                    Excluir
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
-                          )}
-
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button className="text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-500 transition-colors">
-                                <Trash2 className="h-5 w-5" />
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Excluir lote?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir o lote "{batch.lot}" da cerveja "{beerName}"?
-                                  Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => onDeleteBatch(batch.id, { beer_name: batch.beer_name, lot: batch.lot })}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )
       )}
 
       {/* Edit Dialog */}
