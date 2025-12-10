@@ -11,6 +11,8 @@ export interface BeerBatch {
   sku?: string | null;
   olist_synced?: boolean;
   olist_synced_at?: string | null;
+  archived?: boolean;
+  archived_at?: string | null;
 }
 
 const logActivity = async (
@@ -37,6 +39,7 @@ const logActivity = async (
 
 export function useBeers() {
   const [batches, setBatches] = useState<BeerBatch[]>([]);
+  const [archivedBatches, setArchivedBatches] = useState<BeerBatch[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -45,6 +48,7 @@ export function useBeers() {
       const { data, error } = await supabase
         .from('beer_batches')
         .select('*')
+        .eq('archived', false)
         .order('expiration_date', { ascending: true });
 
       if (error) throw error;
@@ -61,9 +65,30 @@ export function useBeers() {
     }
   }, [toast]);
 
+  const fetchArchivedBatches = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('beer_batches')
+        .select('*')
+        .eq('archived', true)
+        .order('archived_at', { ascending: false });
+
+      if (error) throw error;
+      setArchivedBatches(data || []);
+    } catch (error: any) {
+      console.error('Error fetching archived batches:', error);
+      toast({
+        title: 'Erro ao carregar lotes arquivados',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  }, [toast]);
+
   useEffect(() => {
     fetchBatches();
-  }, [fetchBatches]);
+    fetchArchivedBatches();
+  }, [fetchBatches, fetchArchivedBatches]);
 
   const addBatch = async (beerName: string, lot: string, quantity: number, expirationDate: string, sku?: string) => {
     try {
@@ -126,6 +151,7 @@ export function useBeers() {
       }
 
       fetchBatches();
+      fetchArchivedBatches();
     } catch (error: any) {
       console.error('Error deleting batch:', error);
       toast({
@@ -176,6 +202,7 @@ export function useBeers() {
       }
 
       fetchBatches();
+      fetchArchivedBatches();
     } catch (error: any) {
       console.error('Error updating batch:', error);
       toast({
@@ -216,6 +243,7 @@ export function useBeers() {
       );
 
       fetchBatches();
+      fetchArchivedBatches();
     } catch (error: any) {
       console.error('Error toggling Olist sync:', error);
       toast({
@@ -226,5 +254,57 @@ export function useBeers() {
     }
   };
 
-  return { batches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, refetch: fetchBatches };
+  const toggleArchive = async (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => {
+    try {
+      const newState = !currentState;
+      const archivedAt = newState ? new Date().toISOString() : null;
+
+      const { error } = await supabase
+        .from('beer_batches')
+        .update({
+          archived: newState,
+          archived_at: archivedAt,
+        })
+        .eq('id', batchId);
+
+      if (error) throw error;
+
+      toast({
+        title: newState ? 'Lote arquivado' : 'Lote desarquivado',
+        description: `${batchInfo.beer_name} - Lote ${batchInfo.lot}`,
+      });
+
+      await logActivity(
+        newState ? 'batch_archived' : 'batch_unarchived',
+        'beer_batch',
+        batchId,
+        newState 
+          ? `Lote arquivado: ${batchInfo.beer_name} - Lote ${batchInfo.lot}`
+          : `Lote desarquivado: ${batchInfo.beer_name} - Lote ${batchInfo.lot}`
+      );
+
+      fetchBatches();
+      fetchArchivedBatches();
+    } catch (error: any) {
+      console.error('Error toggling archive:', error);
+      toast({
+        title: 'Erro ao arquivar/desarquivar lote',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return { 
+    batches, 
+    archivedBatches,
+    loading, 
+    addBatch, 
+    deleteBatch, 
+    updateBatch, 
+    toggleOlistSync, 
+    toggleArchive,
+    refetch: fetchBatches,
+    refetchArchived: fetchArchivedBatches
+  };
 }
