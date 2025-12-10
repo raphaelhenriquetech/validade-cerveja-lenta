@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
@@ -38,6 +38,8 @@ interface BeerListProps {
   onUpdateBatch: (batchId: string, updates: Partial<BeerBatch>, oldBatch?: BeerBatch) => void;
   onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onToggleArchive?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
+  onSyncToTiny?: (sku: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
+  syncingSkus?: Set<string>;
   filter: string;
   isArchivedView?: boolean;
 }
@@ -48,6 +50,8 @@ export function BeerList({
   onUpdateBatch, 
   onToggleOlistSync, 
   onToggleArchive,
+  onSyncToTiny,
+  syncingSkus = new Set(),
   filter,
   isArchivedView = false
 }: BeerListProps) {
@@ -118,6 +122,12 @@ export function BeerList({
     });
     return groups;
   }, [sortedBatches]);
+
+  const handleSyncToTiny = async (batch: BeerBatch) => {
+    if (onSyncToTiny && batch.sku) {
+      await onSyncToTiny(batch.sku, { beer_name: batch.beer_name, lot: batch.lot });
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm overflow-hidden">
@@ -228,6 +238,7 @@ export function BeerList({
                 beerBatches.map((batch, index) => {
                   const days = getDaysUntilExpiration(batch.expiration_date);
                   const isUrgent = days <= 7 && !isArchivedView;
+                  const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
                   
                   return (
                     <TableRow 
@@ -319,18 +330,50 @@ export function BeerList({
                       <TableCell className="p-4 pr-6">
                         <div className="flex items-center gap-2">
                           {!isArchivedView && (
-                            <button 
-                              className="text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors"
-                              onClick={() => {
-                                setEditingBatch(batch);
-                                setEditQuantity(batch.quantity.toString());
-                                setEditBeerName(batch.beer_name);
-                                setEditExpirationDate(batch.expiration_date);
-                                setEditSku(batch.sku || '');
-                              }}
-                            >
-                              <Pencil className="h-5 w-5" />
-                            </button>
+                            <>
+                              <button 
+                                className="text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors"
+                                onClick={() => {
+                                  setEditingBatch(batch);
+                                  setEditQuantity(batch.quantity.toString());
+                                  setEditBeerName(batch.beer_name);
+                                  setEditExpirationDate(batch.expiration_date);
+                                  setEditSku(batch.sku || '');
+                                }}
+                              >
+                                <Pencil className="h-5 w-5" />
+                              </button>
+
+                              {/* Sync to Tiny button */}
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button 
+                                      className={cn(
+                                        "transition-colors",
+                                        batch.sku 
+                                          ? "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" 
+                                          : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                      )}
+                                      onClick={() => handleSyncToTiny(batch)}
+                                      disabled={!batch.sku || isSyncing}
+                                    >
+                                      <RefreshCw className={cn(
+                                        "h-5 w-5",
+                                        isSyncing && "animate-spin"
+                                      )} />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {batch.sku 
+                                      ? isSyncing 
+                                        ? 'Sincronizando...' 
+                                        : 'Sincronizar estoque com Tiny'
+                                      : 'Adicione um SKU para sincronizar'}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </>
                           )}
                           
                           {/* Archive/Unarchive button */}
