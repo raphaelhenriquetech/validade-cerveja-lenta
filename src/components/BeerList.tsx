@@ -65,8 +65,7 @@ export function BeerList({
   const [editSku, setEditSku] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
-  const [isComparing, setIsComparing] = useState(false);
-  const [hasCompared, setHasCompared] = useState(false);
+  const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -149,61 +148,57 @@ export function BeerList({
     }
   };
 
-  const handleCompareStock = async () => {
-    setIsComparing(true);
+  const handleCompareIndividual = async (sku: string) => {
+    setComparingSkus(prev => new Set(prev).add(sku));
     try {
-      // Get unique SKUs from active batches
-      const uniqueSkus = [...new Set(batches.map(b => b.sku?.trim()).filter(Boolean))] as string[];
-      
-      if (uniqueSkus.length === 0) {
-        toast({
-          title: 'Nenhum SKU encontrado',
-          description: 'Não há lotes com SKU cadastrado para comparar.',
-        });
-        setIsComparing(false);
-        return;
-      }
-
       const { data, error } = await supabase.functions.invoke('compare-tiny-stock', {
-        body: { skus: uniqueSkus }
+        body: { skus: [sku] }
       });
 
       if (error) throw error;
 
-      setTinyStocks(data.stocks || {});
-      setHasCompared(true);
+      setTinyStocks(prev => ({ ...prev, ...data.stocks }));
 
-      // Count divergences
-      const divergencias = Object.keys(data.stocks || {}).filter(sku => {
-        const tinyStock = data.stocks[sku];
-        const localStock = localStockBySku[sku] || 0;
-        return tinyStock !== null && tinyStock !== localStock;
-      });
+      const tinyStock = data.stocks?.[sku];
+      const localStock = localStockBySku[sku] || 0;
 
-      toast({
-        title: divergencias.length > 0 
-          ? `${divergencias.length} divergência(s) encontrada(s)` 
-          : 'Estoque OK!',
-        description: divergencias.length > 0 
-          ? 'Verifique os itens marcados com "Divergente"'
-          : 'Todos os estoques estão sincronizados com o Tiny',
-        variant: divergencias.length > 0 ? 'destructive' : 'default',
-      });
+      if (tinyStock === null || tinyStock === undefined) {
+        toast({
+          title: 'SKU não encontrado',
+          description: `O SKU ${sku} não foi encontrado no Tiny.`,
+          variant: 'destructive'
+        });
+      } else if (tinyStock !== localStock) {
+        toast({
+          title: 'Divergência encontrada!',
+          description: `Local: ${localStock} un. | Tiny: ${tinyStock} un.`,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Estoque OK!',
+          description: `Ambos com ${localStock} unidade(s).`
+        });
+      }
     } catch (error) {
       console.error('Erro ao comparar estoque:', error);
-      toast({ 
-        title: 'Erro', 
-        description: error instanceof Error ? error.message : 'Erro ao comparar estoque', 
-        variant: 'destructive' 
+      toast({
+        title: 'Erro',
+        description: error instanceof Error ? error.message : 'Erro ao comparar estoque',
+        variant: 'destructive'
       });
     } finally {
-      setIsComparing(false);
+      setComparingSkus(prev => {
+        const next = new Set(prev);
+        next.delete(sku);
+        return next;
+      });
     }
   };
 
   // Check if a SKU has stock divergence
   const hasDivergence = (sku: string | null | undefined): boolean => {
-    if (!hasCompared || !sku) return false;
+    if (!sku) return false;
     const cleanSku = sku.trim();
     const tinyStock = tinyStocks[cleanSku];
     const localStock = localStockBySku[cleanSku] || 0;
@@ -267,82 +262,7 @@ export function BeerList({
               </button>
             )}
           </div>
-          
-          {/* Compare Stock Button - Desktop only, Active view only */}
-          {!isMobile && !isArchivedView && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCompareStock}
-              disabled={isComparing}
-              className="gap-2 whitespace-nowrap"
-            >
-              {isComparing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Scale className="h-4 w-4" />
-              )}
-              Fazer Comparativo
-            </Button>
-          )}
         </div>
-        
-        {/* Stock Comparison Summary Card - Desktop only */}
-        {!isMobile && hasCompared && !isArchivedView && (
-          <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg p-4 border border-border">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <Scale className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">Resultado do Comparativo</span>
-                </div>
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">Total:</span>
-                    <span className="font-semibold text-foreground">{Object.keys(tinyStocks).length} SKUs</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-destructive" />
-                    <span className="text-muted-foreground">Divergentes:</span>
-                    <span className="font-semibold text-destructive">
-                      {Object.keys(tinyStocks).filter(sku => {
-                        const tinyStock = tinyStocks[sku];
-                        const localStock = localStockBySku[sku] || 0;
-                        return tinyStock !== null && tinyStock !== localStock;
-                      }).length}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-muted-foreground">OK:</span>
-                    <span className="font-semibold text-green-600 dark:text-green-400">
-                      {Object.keys(tinyStocks).filter(sku => {
-                        const tinyStock = tinyStocks[sku];
-                        const localStock = localStockBySku[sku] || 0;
-                        return tinyStock !== null && tinyStock === localStock;
-                      }).length}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-gray-400" />
-                    <span className="text-muted-foreground">Não encontrados:</span>
-                    <span className="font-semibold text-muted-foreground">
-                      {Object.values(tinyStocks).filter(v => v === null).length}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setHasCompared(false)}
-                className="h-8 px-2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
 
       {sortedBatches.length === 0 ? (
@@ -504,6 +424,28 @@ export function BeerList({
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>Sincronizar Tiny</TooltipContent>
+                            </Tooltip>
+
+                            {/* Compare Stock button */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-9 p-0 text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                                  onClick={() => batch.sku && handleCompareIndividual(batch.sku)}
+                                  disabled={!batch.sku || comparingSkus.has(batch.sku || '')}
+                                >
+                                  {comparingSkus.has(batch.sku || '') ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Scale className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {batch.sku ? 'Comparar estoque com Tiny' : 'Adicione um SKU para comparar'}
+                              </TooltipContent>
                             </Tooltip>
                           </>
                         )}
@@ -786,6 +728,37 @@ export function BeerList({
                                           ? 'Sincronizando...' 
                                           : 'Sincronizar estoque com Tiny'
                                         : 'Adicione um SKU para sincronizar'}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+
+                                {/* Compare Stock button */}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <button 
+                                        className={cn(
+                                          "transition-colors",
+                                          batch.sku && !comparingSkus.has(batch.sku)
+                                            ? "text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300" 
+                                            : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                        )}
+                                        onClick={() => batch.sku && handleCompareIndividual(batch.sku)}
+                                        disabled={!batch.sku || comparingSkus.has(batch.sku || '')}
+                                      >
+                                        {comparingSkus.has(batch.sku || '') ? (
+                                          <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                          <Scale className="h-5 w-5" />
+                                        )}
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      {batch.sku 
+                                        ? comparingSkus.has(batch.sku) 
+                                          ? 'Comparando...' 
+                                          : 'Comparar estoque com Tiny'
+                                        : 'Adicione um SKU para comparar'}
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
