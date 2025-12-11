@@ -286,6 +286,63 @@ export function BeerList({
             </Button>
           )}
         </div>
+        
+        {/* Stock Comparison Summary Card - Desktop only */}
+        {!isMobile && hasCompared && !isArchivedView && (
+          <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg p-4 border border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Resultado do Comparativo</span>
+                </div>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Total:</span>
+                    <span className="font-semibold text-foreground">{Object.keys(tinyStocks).length} SKUs</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-destructive" />
+                    <span className="text-muted-foreground">Divergentes:</span>
+                    <span className="font-semibold text-destructive">
+                      {Object.keys(tinyStocks).filter(sku => {
+                        const tinyStock = tinyStocks[sku];
+                        const localStock = localStockBySku[sku] || 0;
+                        return tinyStock !== null && tinyStock !== localStock;
+                      }).length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <span className="text-muted-foreground">OK:</span>
+                    <span className="font-semibold text-green-600 dark:text-green-400">
+                      {Object.keys(tinyStocks).filter(sku => {
+                        const tinyStock = tinyStocks[sku];
+                        const localStock = localStockBySku[sku] || 0;
+                        return tinyStock !== null && tinyStock === localStock;
+                      }).length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-400" />
+                    <span className="text-muted-foreground">Não encontrados:</span>
+                    <span className="font-semibold text-muted-foreground">
+                      {Object.values(tinyStocks).filter(v => v === null).length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setHasCompared(false)}
+                className="h-8 px-2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {sortedBatches.length === 0 ? (
