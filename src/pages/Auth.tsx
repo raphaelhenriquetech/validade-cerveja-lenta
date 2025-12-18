@@ -5,8 +5,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Beer, Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import stockbrewLogo from '@/assets/stockbrew-logo.png';
 
 const authSchema = z.object({
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
@@ -135,9 +136,12 @@ const Auth = () => {
         
         {/* Content */}
         <div className="relative z-10 flex flex-col items-start px-16 max-w-lg">
-          <div className="flex items-center gap-3 pb-6">
-            <Beer className="h-10 w-10 text-primary" />
-            <h2 className="text-2xl font-bold text-primary-foreground">Cerveja Lenta</h2>
+          <div className="flex items-center pb-6">
+            <img 
+              src={stockbrewLogo} 
+              alt="StockBrew" 
+              className="h-16 w-auto"
+            />
           </div>
           <h3 className="text-4xl font-bold tracking-tight text-primary-foreground mb-4">
             Controle de lotes e validades para sua cervejaria.
@@ -162,9 +166,12 @@ const Auth = () => {
         
         <div className="flex w-full max-w-md flex-col items-start gap-2">
           {/* Mobile Logo */}
-          <div className="flex items-center gap-3 pb-4 lg:hidden">
-            <Beer className="h-8 w-8 text-primary" />
-            <h2 className="text-xl font-bold text-foreground">Cerveja Lenta</h2>
+          <div className="flex items-center pb-4 lg:hidden">
+            <img 
+              src={stockbrewLogo} 
+              alt="StockBrew" 
+              className="h-12 w-auto"
+            />
           </div>
 
           <h1 className="text-foreground tracking-tight text-[32px] font-bold leading-tight text-left pb-1">
