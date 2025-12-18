@@ -48,20 +48,17 @@ const Index = () => {
       {/* Modern Header */}
       <header className="bg-white dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-700/50 px-4 md:px-6 py-4 sticky top-0 backdrop-blur-sm z-10">
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center">
             <img 
               src={stockbrewLogoLight} 
               alt="StockBrew" 
-              className="h-10 md:h-12 w-auto dark:hidden"
+              className="h-[68px] md:h-[82px] w-auto dark:hidden"
             />
             <img 
               src={stockbrewLogoDark} 
               alt="StockBrew" 
-              className="h-10 md:h-12 w-auto hidden dark:block"
+              className="h-[68px] md:h-[82px] w-auto hidden dark:block"
             />
-            <div>
-              <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Controle de Validades</h1>
-            </div>
           </div>
           <div className="flex items-center gap-1 md:gap-2 text-gray-500 dark:text-gray-400">
             <ReportGenerator batches={batches} />
