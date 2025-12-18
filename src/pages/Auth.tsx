@@ -135,15 +135,15 @@ const Auth = () => {
         </div>
         
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-start px-16 max-w-lg">
-          <div className="flex items-center pb-6">
+        <div className="relative z-10 flex flex-col items-center px-16 max-w-lg w-full">
+          <div className="flex items-center justify-center pb-6 w-full">
             <img 
               src={stockbrewLogo} 
               alt="StockBrew" 
-              className="h-16 w-auto"
+              className="h-28 w-auto"
             />
           </div>
-          <h3 className="text-4xl font-bold tracking-tight text-primary-foreground mb-4">
+          <h3 className="text-4xl font-bold tracking-tight text-primary-foreground mb-4 text-center">
             Controle de lotes e validades para sua cervejaria.
           </h3>
           <p className="text-lg text-muted-foreground">
@@ -166,11 +166,11 @@ const Auth = () => {
         
         <div className="flex w-full max-w-md flex-col items-start gap-2">
           {/* Mobile Logo */}
-          <div className="flex items-center pb-4 lg:hidden">
+          <div className="flex items-center justify-center pb-4 lg:hidden w-full">
             <img 
               src={stockbrewLogo} 
               alt="StockBrew" 
-              className="h-12 w-auto"
+              className="h-20 w-auto"
             />
           </div>
 
