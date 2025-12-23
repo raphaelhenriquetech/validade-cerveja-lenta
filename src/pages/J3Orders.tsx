@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Plus, FileText, History, Settings, Download, Eye } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus, FileText, Settings, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import { J3OrderForm } from '@/components/j3/J3OrderForm';
 import { J3OrderList } from '@/components/j3/J3OrderList';
 import { J3SellerConfig } from '@/components/j3/J3SellerConfig';
+import { CepChecker } from '@/components/j3/CepChecker';
 import { useJ3Orders } from '@/hooks/useJ3Orders';
 import { useJ3SellerConfig } from '@/hooks/useJ3SellerConfig';
 import stockbrewLogoLight from '@/assets/stockbrew-logo-light.png';
@@ -110,6 +111,10 @@ const J3Orders = () => {
                   {orders.length}
                 </span>
               </TabsTrigger>
+              <TabsTrigger value="check-cep" className="gap-2">
+                <MapPin className="h-4 w-4" />
+                Consultar CEP
+              </TabsTrigger>
               <TabsTrigger value="config" className="gap-2">
                 <Settings className="h-4 w-4" />
                 Configurações
@@ -143,6 +148,20 @@ const J3Orders = () => {
                 </CardHeader>
                 <CardContent>
                   <J3OrderList orders={orders} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="check-cep">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Consultar Cobertura de CEP</CardTitle>
+                  <CardDescription>
+                    Verifique se um CEP está dentro da área de entrega da J3/Tracken
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CepChecker />
                 </CardContent>
               </Card>
             </TabsContent>

@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Send, Download } from 'lucide-react';
+import { Loader2, Send, Download, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -34,11 +34,26 @@ interface J3OrderFormProps {
   disabled?: boolean;
 }
 
+interface CoverageStatus {
+  checking: boolean;
+  covered: boolean | null;
+  message: string | null;
+  prazo: number | null;
+  valor: number | null;
+}
+
 export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [lastCodpedido, setLastCodpedido] = useState<number | null>(null);
   const [downloadingLabel, setDownloadingLabel] = useState(false);
+  const [coverageStatus, setCoverageStatus] = useState<CoverageStatus>({
+    checking: false,
+    covered: null,
+    message: null,
+    prazo: null,
+    valor: null,
+  });
 
   const form = useForm<OrderFormData>({
     resolver: zodResolver(orderSchema),
@@ -59,9 +74,68 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
     },
   });
 
+  const checkCepCoverage = async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) {
+      setCoverageStatus({
+        checking: false,
+        covered: null,
+        message: null,
+        prazo: null,
+        valor: null,
+      });
+      return;
+    }
+
+    setCoverageStatus(prev => ({ ...prev, checking: true }));
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/j3-check-coverage?cep=${cleanCep}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCoverageStatus({
+          checking: false,
+          covered: data.covered,
+          message: data.message || (data.covered ? 'Entrega disponível' : 'CEP fora da área de entrega'),
+          prazo: data.prazo || null,
+          valor: data.valor || null,
+        });
+      } else {
+        setCoverageStatus({
+          checking: false,
+          covered: null,
+          message: data.error || 'Erro ao verificar cobertura',
+          prazo: null,
+          valor: null,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao verificar cobertura:', error);
+      setCoverageStatus({
+        checking: false,
+        covered: null,
+        message: 'Erro ao verificar cobertura',
+        prazo: null,
+        valor: null,
+      });
+    }
+  };
+
   const fetchAddressByCep = async (cep: string) => {
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length !== 8) return;
+
+    // Check coverage first
+    checkCepCoverage(cep);
 
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
@@ -79,6 +153,16 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
   };
 
   const onSubmit = async (data: OrderFormData) => {
+    // Block submission if CEP is not covered
+    if (coverageStatus.covered === false) {
+      toast({
+        title: 'CEP não atendido',
+        description: 'Este CEP está fora da área de entrega da J3/Tracken.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = {
@@ -99,6 +183,13 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
 
       setLastCodpedido(response.data.codpedido);
       form.reset();
+      setCoverageStatus({
+        checking: false,
+        covered: null,
+        message: null,
+        prazo: null,
+        valor: null,
+      });
       onSuccess();
 
     } catch (error) {
@@ -118,12 +209,6 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
     
     setDownloadingLabel(true);
     try {
-      const { data, error } = await supabase.functions.invoke('j3-get-label', {
-        body: {},
-        headers: {},
-      });
-
-      // Fazer fetch direto para obter o PDF
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/j3-get-label?codpedido=${lastCodpedido}`,
         {
@@ -164,6 +249,49 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
       setDownloadingLabel(false);
     }
   };
+
+  const renderCoverageStatus = () => {
+    if (coverageStatus.checking) {
+      return (
+        <Badge variant="secondary" className="gap-1.5">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Verificando cobertura...
+        </Badge>
+      );
+    }
+
+    if (coverageStatus.covered === true) {
+      return (
+        <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-700">
+          <CheckCircle className="h-3 w-3" />
+          {coverageStatus.message}
+          {coverageStatus.prazo && ` - ${coverageStatus.prazo} dias`}
+        </Badge>
+      );
+    }
+
+    if (coverageStatus.covered === false) {
+      return (
+        <Badge variant="destructive" className="gap-1.5">
+          <XCircle className="h-3 w-3" />
+          {coverageStatus.message}
+        </Badge>
+      );
+    }
+
+    if (coverageStatus.message && coverageStatus.covered === null) {
+      return (
+        <Badge variant="secondary" className="gap-1.5 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          <AlertCircle className="h-3 w-3" />
+          {coverageStatus.message}
+        </Badge>
+      );
+    }
+
+    return null;
+  };
+
+  const isSubmitDisabled = submitting || disabled || coverageStatus.covered === false;
 
   return (
     <Form {...form}>
@@ -317,6 +445,9 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
                     />
                   </FormControl>
                   <FormMessage />
+                  <div className="mt-1.5">
+                    {renderCoverageStatus()}
+                  </div>
                 </FormItem>
               )}
             />
@@ -379,7 +510,7 @@ export const J3OrderForm = ({ onSuccess, disabled }: J3OrderFormProps) => {
 
         {/* Ações */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button type="submit" disabled={submitting || disabled} className="flex-1">
+          <Button type="submit" disabled={isSubmitDisabled} className="flex-1">
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
