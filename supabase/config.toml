@@ -14,3 +14,12 @@ verify_jwt = false
 
 [functions.compare-tiny-stock]
 verify_jwt = false
+
+[functions.j3-create-order]
+verify_jwt = false
+
+[functions.j3-get-label]
+verify_jwt = false
+
+[functions.j3-get-history]
+verify_jwt = false

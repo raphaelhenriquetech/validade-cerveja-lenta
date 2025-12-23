@@ -110,6 +110,135 @@ export type Database = {
         }
         Relationships: []
       }
+      j3_orders: {
+        Row: {
+          api_response: Json | null
+          bairro_entrega: string
+          cep_entrega: string
+          cidade_entrega: string
+          cod_servico: string | null
+          codpedido: number | null
+          cpf_cnpj_comprador: string | null
+          created_at: string | null
+          endereco_entrega: string
+          estado_entrega: string
+          id: string
+          id_envio: string
+          id_venda: string
+          nome_comprador: string
+          peso: number | null
+          status: string | null
+          telefone_comprador: string
+          valor_pago: number | null
+        }
+        Insert: {
+          api_response?: Json | null
+          bairro_entrega: string
+          cep_entrega: string
+          cidade_entrega: string
+          cod_servico?: string | null
+          codpedido?: number | null
+          cpf_cnpj_comprador?: string | null
+          created_at?: string | null
+          endereco_entrega: string
+          estado_entrega: string
+          id?: string
+          id_envio: string
+          id_venda: string
+          nome_comprador: string
+          peso?: number | null
+          status?: string | null
+          telefone_comprador: string
+          valor_pago?: number | null
+        }
+        Update: {
+          api_response?: Json | null
+          bairro_entrega?: string
+          cep_entrega?: string
+          cidade_entrega?: string
+          cod_servico?: string | null
+          codpedido?: number | null
+          cpf_cnpj_comprador?: string | null
+          created_at?: string | null
+          endereco_entrega?: string
+          estado_entrega?: string
+          id?: string
+          id_envio?: string
+          id_venda?: string
+          nome_comprador?: string
+          peso?: number | null
+          status?: string | null
+          telefone_comprador?: string
+          valor_pago?: number | null
+        }
+        Relationships: []
+      }
+      j3_seller_config: {
+        Row: {
+          ambiente: string | null
+          bairro_retirada: string
+          cep_vendedor: string
+          cidade_retirada: string
+          cliente: string
+          cnpj_transportadora: string
+          cnpj_vendedor: string
+          cod_cliente: string
+          complemento_retirada: string | null
+          created_at: string | null
+          email_vendedor: string | null
+          estado_retirada: string
+          id: string
+          ie_vendedor: string | null
+          local_retirada: string
+          numero_retirada: string | null
+          razao_social: string
+          telefone_vendedor: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ambiente?: string | null
+          bairro_retirada: string
+          cep_vendedor: string
+          cidade_retirada: string
+          cliente: string
+          cnpj_transportadora: string
+          cnpj_vendedor: string
+          cod_cliente: string
+          complemento_retirada?: string | null
+          created_at?: string | null
+          email_vendedor?: string | null
+          estado_retirada: string
+          id?: string
+          ie_vendedor?: string | null
+          local_retirada: string
+          numero_retirada?: string | null
+          razao_social: string
+          telefone_vendedor?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ambiente?: string | null
+          bairro_retirada?: string
+          cep_vendedor?: string
+          cidade_retirada?: string
+          cliente?: string
+          cnpj_transportadora?: string
+          cnpj_vendedor?: string
+          cod_cliente?: string
+          complemento_retirada?: string | null
+          created_at?: string | null
+          email_vendedor?: string | null
+          estado_retirada?: string
+          id?: string
+          ie_vendedor?: string | null
+          local_retirada?: string
+          numero_retirada?: string | null
+          razao_social?: string
+          telefone_vendedor?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_settings: {
         Row: {
           apikey: string
