@@ -80,11 +80,15 @@ Deno.serve(async (req) => {
     const prazoParams = new URLSearchParams({
       filial: sellerConfig.cnpj_transportadora.replace(/\D/g, ''),
       cep: cleanCep,
+      cliente: sellerConfig.cod_cliente,
+      servico: '2', // Serviço padrão
     });
 
     console.log('[j3-check-coverage] Consultando cobertura:', {
       url: `${baseUrl}/prazo?${prazoParams.toString()}`,
       cep: cleanCep,
+      cliente: sellerConfig.cod_cliente,
+      servico: '2',
       ambiente: sellerConfig.ambiente,
     });
 
