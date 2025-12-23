@@ -10,6 +10,7 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import TinyProducts from "./pages/TinyProducts";
+import J3Orders from "./pages/J3Orders";
 import Install from "./pages/Install";
 import { Loader2 } from "lucide-react";
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/produtos-tiny" element={<ProtectedRoute><TinyProducts /></ProtectedRoute>} />
+            <Route path="/etiquetas-j3" element={<ProtectedRoute><J3Orders /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
