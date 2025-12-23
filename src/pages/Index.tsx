@@ -5,7 +5,7 @@ import { BeerList } from '@/components/BeerList';
 import { ExpirationDashboard } from '@/components/ExpirationDashboard';
 import { useBeers } from '@/hooks/useBeers';
 import { useAuth } from '@/hooks/useAuth';
-import { Settings, Loader2, LogOut, Package } from 'lucide-react';
+import { Settings, Loader2, LogOut, Package, Truck } from 'lucide-react';
 import stockbrewLogoLight from '@/assets/stockbrew-logo-light.png';
 import stockbrewLogoDark from '@/assets/stockbrew-logo-dark.png';
 import { Button } from '@/components/ui/button';
@@ -70,6 +70,16 @@ const Index = () => {
                 title="Produtos Tiny"
               >
                 <Package className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/etiquetas-j3">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700"
+                title="Etiquetas J3/Tracken"
+              >
+                <Truck className="h-5 w-5" />
               </Button>
             </Link>
             <Link to="/configuracoes">

@@ -74,10 +74,29 @@ export const J3SellerConfig = ({ config, onSuccess }: J3SellerConfigProps) => {
         
         if (error) throw error;
       } else {
-        // Criar nova configuração
+        // Criar nova configuração - cast para o tipo esperado pelo Supabase
+        const insertData = {
+          cnpj_transportadora: data.cnpj_transportadora,
+          cnpj_vendedor: data.cnpj_vendedor,
+          cliente: data.cliente,
+          razao_social: data.razao_social,
+          cod_cliente: data.cod_cliente,
+          ie_vendedor: data.ie_vendedor || null,
+          telefone_vendedor: data.telefone_vendedor || null,
+          email_vendedor: data.email_vendedor || null,
+          local_retirada: data.local_retirada,
+          numero_retirada: data.numero_retirada || null,
+          complemento_retirada: data.complemento_retirada || null,
+          bairro_retirada: data.bairro_retirada,
+          cidade_retirada: data.cidade_retirada,
+          estado_retirada: data.estado_retirada,
+          cep_vendedor: data.cep_vendedor,
+          ambiente: data.ambiente || 'homologacao',
+        };
+        
         const { error } = await supabase
           .from('j3_seller_config')
-          .insert(data);
+          .insert([insertData]);
         
         if (error) throw error;
       }
