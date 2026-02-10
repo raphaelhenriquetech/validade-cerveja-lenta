@@ -1,47 +1,57 @@
 
 
-# Landing Page de Vendas - StockBrew
+# Revisao Completa da Landing Page - Logo Grande + Mobile Responsivo
 
-## Objetivo
-Criar uma landing page de vendas moderna, responsiva e com suporte a dark mode, acessivel na rota `/landing`, sem autenticacao necessaria.
+## Problemas Identificados
 
-## Estrutura da Pagina
+1. **Logo muito pequeno** - Atualmente `h-8` (32px), precisa aumentar ~300%
+2. **Responsividade mobile** precisa de revisao geral em todas as secoes
 
-### Secoes da Landing Page
+## Alteracoes Planejadas
 
-1. **Hero** - Logo StockBrew, titulo impactante, subtitulo com proposta de valor, botao CTA ("Comece Agora" -> /auth), badge "PWA - Instale no celular"
-2. **Funcionalidades** - Grid de cards com icones (Lucide) destacando as 6 principais funcoes: Controle de Validade, Dashboard em Tempo Real, Relatorios Automaticos, Etiquetas J3/Tracken, Consulta de CEP, Historico de Atividades
-3. **Integracoes** - Secao visual com logos/icones das integracoes: Tiny ERP, J3/Tracken, WhatsApp, Email (Resend), PWA
-4. **Beneficios** - Lista com icones de check: Reducao de perdas, Automacao de processos, Controle centralizado, Acesso mobile
-5. **Depoimentos** - Carousel (Embla) com depoimentos fictcios de clientes satisfeitos
-6. **CTA Final** - Secao de conversao com gradiente, titulo forte e botao para cadastro
+### 1. Logo no Header
+- Aumentar de `h-8` para `h-24` (96px) no desktop e `h-16` (64px) no mobile
+- Ajustar padding do header para acomodar o logo maior (`py-4`)
+
+### 2. Hero Section - Mobile
+- Reduzir padding vertical no mobile (`py-12 md:py-32`)
+- Titulo: `text-3xl md:text-6xl` para melhor leitura no mobile
+- Subtitulo: `text-base md:text-xl`
+- Botoes empilhados no mobile (ja esta com `flex-col sm:flex-row`)
+
+### 3. Funcionalidades - Mobile
+- Grid ja responsivo (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`) - OK
+- Reduzir padding da secao no mobile (`py-12 md:py-20`)
+
+### 4. Integracoes - Mobile
+- Mudar grid mobile de `grid-cols-2` para `grid-cols-1 sm:grid-cols-2 lg:grid-cols-5`
+- Cards com mais espaco interno no mobile
+
+### 5. Depoimentos / Carousel - Mobile
+- Reduzir padding lateral (`px-4 md:px-12`)
+- Carousel items ocupam 100% no mobile (ja esta `md:basis-1/2`)
+- Esconder setas do carousel no mobile e usar swipe
+- Alternativa: mostrar setas menores no mobile
+
+### 6. CTA Final - Mobile
+- Titulo: `text-2xl md:text-4xl`
+- Reduzir padding (`py-12 md:py-20`)
+
+### 7. Secoes gerais
+- Reduzir `mb-14` dos headers de secao para `mb-8 md:mb-14`
+- Titulos de secao: `text-2xl md:text-4xl`
 
 ### Detalhes Tecnicos
 
-**Arquivos a criar:**
-- `src/pages/Landing.tsx` - Pagina completa da landing page com todas as secoes
+**Arquivo editado:** `src/pages/Landing.tsx`
 
-**Arquivos a editar:**
-- `src/App.tsx` - Adicionar rota `/landing` como rota publica (sem ProtectedRoute)
-
-**Componentes reutilizados:**
-- `Button` (shadcn/ui) - CTAs
-- `Card` (shadcn/ui) - Cards de funcionalidades
-- `Badge` (shadcn/ui) - Tags e destaques
-- `Carousel` (Embla) - Depoimentos
-- `ThemeToggle` - Alternancia de tema no header da landing
-- Logos existentes: `stockbrew-logo-light.png`, `stockbrew-logo-dark.png`
-
-**Design:**
-- Cores do design system existente (primary roxo, accent azul, status colors)
-- Background `bg-[#F8FAFC]` / `dark:bg-[#18181B]` conforme padrao
-- Animacoes `animate-fade-in`, `hover-lift` ja existentes no CSS
-- Font `Inter` / `Manrope` para display
-- Secoes alternando backgrounds claros/escuros para contraste
-- Totalmente responsivo (mobile-first)
-- Suporte completo a dark mode
-
-**Rota:**
-- `/landing` - publica, sem autenticacao
-- Botoes CTA redirecionam para `/auth`
+**Resumo das classes Tailwind alteradas:**
+- Header logo: `h-8` -> `h-16 md:h-24`
+- Header padding: `py-3` -> `py-4`
+- Hero: `py-20 md:py-32` -> `py-12 md:py-32`
+- H1: `text-4xl md:text-6xl` -> `text-3xl md:text-6xl`
+- Secoes: padding e titulos com breakpoints mobile/desktop
+- Integracoes grid: `grid-cols-2` -> `grid-cols-1 sm:grid-cols-2`
+- Carousel container: `px-12` -> `px-2 md:px-12`
+- CTA h2: `text-3xl md:text-4xl` -> `text-2xl md:text-4xl`
 
