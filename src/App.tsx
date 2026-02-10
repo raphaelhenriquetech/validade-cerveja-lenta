@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import TinyProducts from "./pages/TinyProducts";
 import J3Orders from "./pages/J3Orders";
 import Install from "./pages/Install";
+import Landing from "./pages/Landing";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/install" element={<Install />} />
+            <Route path="/landing" element={<Landing />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/configuracoes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/produtos-tiny" element={<ProtectedRoute><TinyProducts /></ProtectedRoute>} />
