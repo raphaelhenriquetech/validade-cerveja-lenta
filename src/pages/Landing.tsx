@@ -118,12 +118,12 @@ const Landing = () => {
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto flex items-center justify-between py-3 px-4">
+        <div className="container mx-auto flex items-center justify-between py-4 px-4">
           <div className="flex items-center gap-3">
             <img
               src={resolvedTheme === "dark" ? logoDark : logoLight}
               alt="StockBrew"
-              className="h-8"
+              className="h-16 md:h-24"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -136,19 +136,19 @@ const Landing = () => {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-32">
+      <section className="relative overflow-hidden py-12 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
         <div className="container mx-auto px-4 text-center relative z-10">
           <Badge variant="secondary" className="mb-6 text-sm px-4 py-1.5">
             <Smartphone className="mr-1.5 h-3.5 w-3.5" />
             PWA — Instale no celular
           </Badge>
-          <h1 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
+          <h1 className="font-display text-3xl md:text-6xl font-extrabold tracking-tight mb-4 md:mb-6 leading-tight">
             Controle de validade
             <br />
             <span className="text-primary">inteligente</span> para cervejarias
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+          <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 px-2">
             Gerencie lotes, automatize relatórios, sincronize estoque com o Tiny ERP e gere
             etiquetas de envio — tudo em um só lugar.
           </p>
@@ -166,11 +166,11 @@ const Landing = () => {
       </section>
 
       {/* Funcionalidades */}
-      <section id="funcionalidades" className="py-20 bg-muted/50">
+      <section id="funcionalidades" className="py-12 md:py-20 bg-muted/50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <Badge variant="outline" className="mb-4">Funcionalidades</Badge>
-            <h2 className="font-display text-3xl md:text-4xl font-bold">
+            <h2 className="font-display text-2xl md:text-4xl font-bold">
               Tudo que você precisa para gerenciar seus lotes
             </h2>
           </div>
@@ -191,15 +191,15 @@ const Landing = () => {
       </section>
 
       {/* Integrações */}
-      <section className="py-20">
+      <section className="py-12 md:py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <Badge variant="outline" className="mb-4">Integrações</Badge>
-            <h2 className="font-display text-3xl md:text-4xl font-bold">
+            <h2 className="font-display text-2xl md:text-4xl font-bold">
               Conectado com suas ferramentas
             </h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
             {integrations.map((item) => (
               <Card key={item.name} className="hover-lift text-center border-border/50">
                 <CardContent className="p-6 flex flex-col items-center">
@@ -216,11 +216,11 @@ const Landing = () => {
       </section>
 
       {/* Benefícios */}
-      <section className="py-20 bg-muted/50">
+      <section className="py-12 md:py-20 bg-muted/50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <Badge variant="outline" className="mb-4">Benefícios</Badge>
-            <h2 className="font-display text-3xl md:text-4xl font-bold">
+            <h2 className="font-display text-2xl md:text-4xl font-bold">
               Por que escolher o StockBrew?
             </h2>
           </div>
@@ -238,15 +238,15 @@ const Landing = () => {
       </section>
 
       {/* Depoimentos */}
-      <section className="py-20">
+      <section className="py-12 md:py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <Badge variant="outline" className="mb-4">Depoimentos</Badge>
-            <h2 className="font-display text-3xl md:text-4xl font-bold">
+            <h2 className="font-display text-2xl md:text-4xl font-bold">
               O que nossos clientes dizem
             </h2>
           </div>
-          <div className="max-w-4xl mx-auto px-12">
+          <div className="max-w-4xl mx-auto px-2 md:px-12">
             <Carousel opts={{ loop: true }}>
               <CarouselContent>
                 {testimonials.map((t) => (
@@ -270,17 +270,17 @@ const Landing = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+              <CarouselPrevious className="hidden md:flex" />
+              <CarouselNext className="hidden md:flex" />
             </Carousel>
           </div>
         </div>
       </section>
 
       {/* CTA Final */}
-      <section className="py-20 bg-primary text-primary-foreground">
+      <section className="py-12 md:py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="font-display text-2xl md:text-4xl font-bold mb-4">
             Pronto para eliminar perdas e automatizar seu controle?
           </h2>
           <p className="text-lg opacity-90 max-w-xl mx-auto mb-8">
