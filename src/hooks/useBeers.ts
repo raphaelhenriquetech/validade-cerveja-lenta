@@ -13,6 +13,7 @@ export interface BeerBatch {
   olist_synced_at?: string | null;
   archived?: boolean;
   archived_at?: string | null;
+  tiny_description_updated_at?: string | null;
 }
 
 const logActivity = async (
