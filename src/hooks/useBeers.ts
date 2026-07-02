@@ -480,7 +480,7 @@ export function useBeers() {
       });
       return false;
     }
-  }, [toast]);
+  }, [toast, fetchBatches]);
 
   return { 
     batches, 
