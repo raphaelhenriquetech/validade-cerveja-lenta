@@ -42,7 +42,7 @@ interface BeerListProps {
   onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onToggleArchive?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onSyncToTiny?: (sku: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
-  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
+  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }, batchId?: string) => Promise<boolean>;
   syncingSkus?: Set<string>;
   filter: string;
   isArchivedView?: boolean;
