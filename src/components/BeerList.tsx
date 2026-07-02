@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw, Scale, Loader2, AlertTriangle } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw, Scale, Loader2, AlertTriangle, CalendarClock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
@@ -42,6 +42,7 @@ interface BeerListProps {
   onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onToggleArchive?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onSyncToTiny?: (sku: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
+  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
   syncingSkus?: Set<string>;
   filter: string;
   isArchivedView?: boolean;
@@ -54,6 +55,7 @@ export function BeerList({
   onToggleOlistSync, 
   onToggleArchive,
   onSyncToTiny,
+  onUpdateTinyDescription,
   syncingSkus = new Set(),
   filter,
   isArchivedView = false
@@ -66,6 +68,7 @@ export function BeerList({
   const [searchTerm, setSearchTerm] = useState('');
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
+  const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -145,6 +148,23 @@ export function BeerList({
   const handleSyncToTiny = async (batch: BeerBatch) => {
     if (onSyncToTiny && batch.sku) {
       await onSyncToTiny(batch.sku, { beer_name: batch.beer_name, lot: batch.lot });
+    }
+  };
+
+  const handleUpdateDescription = async (batch: BeerBatch) => {
+    if (!onUpdateTinyDescription || !batch.sku) return;
+    setUpdatingDescBatches(prev => new Set(prev).add(batch.id));
+    try {
+      await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
+        beer_name: batch.beer_name,
+        lot: batch.lot,
+      });
+    } finally {
+      setUpdatingDescBatches(prev => {
+        const n = new Set(prev);
+        n.delete(batch.id);
+        return n;
+      });
     }
   };
 
@@ -447,6 +467,30 @@ export function BeerList({
                                 {batch.sku ? 'Comparar estoque com Tiny' : 'Adicione um SKU para comparar'}
                               </TooltipContent>
                             </Tooltip>
+
+                            {/* Update Tiny Description with expiry */}
+                            {onUpdateTinyDescription && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                                    onClick={() => handleUpdateDescription(batch)}
+                                    disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                  >
+                                    {updatingDescBatches.has(batch.id) ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <CalendarClock className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {batch.sku ? 'Enviar validade para descrição no Tiny' : 'Adicione um SKU'}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           </>
                         )}
                       </div>
@@ -762,6 +806,39 @@ export function BeerList({
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
+
+                                {/* Update Tiny Description with expiry */}
+                                {onUpdateTinyDescription && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <button
+                                          className={cn(
+                                            "transition-colors",
+                                            batch.sku && !updatingDescBatches.has(batch.id)
+                                              ? "text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
+                                              : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                          )}
+                                          onClick={() => handleUpdateDescription(batch)}
+                                          disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                        >
+                                          {updatingDescBatches.has(batch.id) ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                          ) : (
+                                            <CalendarClock className="h-5 w-5" />
+                                          )}
+                                        </button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        {batch.sku
+                                          ? updatingDescBatches.has(batch.id)
+                                            ? 'Atualizando descrição...'
+                                            : 'Enviar validade para descrição no Tiny'
+                                          : 'Adicione um SKU'}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
                               </>
                             )}
                             

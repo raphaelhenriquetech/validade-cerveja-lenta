@@ -416,6 +416,61 @@ export function useBeers() {
     }
   };
 
+  const updateTinyDescription = useCallback(async (
+    sku: string,
+    expirationDate: string,
+    batchInfo?: { beer_name: string; lot: string }
+  ) => {
+    if (!sku) {
+      toast({
+        title: 'SKU não informado',
+        description: 'O lote precisa ter um SKU para atualizar a descrição no Tiny',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (!expirationDate) {
+      toast({
+        title: 'Validade ausente',
+        description: 'Este lote não tem uma data de validade definida',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    try {
+      const response = await supabase.functions.invoke('update-tiny-description', {
+        body: { sku, expirationDate },
+      });
+
+      if (response.error) throw new Error(response.error.message);
+      const data = response.data;
+      if (!data?.success) throw new Error(data?.error || 'Erro ao atualizar descrição');
+
+      toast({
+        title: 'Descrição atualizada no Tiny',
+        description: `SKU ${sku}: validade ${data.validade} adicionada à descrição`,
+      });
+
+      await logActivity(
+        'tiny_description_updated',
+        'beer_batch',
+        null,
+        `Descrição atualizada no Tiny: SKU ${sku} - Validade ${data.validade}${batchInfo ? ` (${batchInfo.beer_name} - Lote ${batchInfo.lot})` : ''}`
+      );
+
+      return true;
+    } catch (error: any) {
+      console.error('[updateTinyDescription] Error:', error);
+      toast({
+        title: 'Erro ao atualizar descrição',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return false;
+    }
+  }, [toast]);
+
   return { 
     batches, 
     archivedBatches,
@@ -427,6 +482,7 @@ export function useBeers() {
     toggleArchive,
     syncStockToTiny,
     syncingSkus,
+    updateTinyDescription,
     refetch: fetchBatches,
     refetchArchived: fetchArchivedBatches
   };

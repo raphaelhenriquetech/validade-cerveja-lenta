@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Index = () => {
-  const { batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, toggleArchive, syncStockToTiny, syncingSkus } = useBeers();
+  const { batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch, toggleOlistSync, toggleArchive, syncStockToTiny, syncingSkus, updateTinyDescription } = useBeers();
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [filter, setFilter] = useState('all');
@@ -140,6 +140,7 @@ const Index = () => {
                   onToggleOlistSync={toggleOlistSync}
                   onToggleArchive={toggleArchive}
                   onSyncToTiny={syncStockToTiny}
+                  onUpdateTinyDescription={updateTinyDescription}
                   syncingSkus={syncingSkus}
                   filter={filter} 
                 />

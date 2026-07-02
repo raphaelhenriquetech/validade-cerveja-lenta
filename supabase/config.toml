@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.j3-check-coverage]
 verify_jwt = false
+
+[functions.update-tiny-description]
+verify_jwt = false
