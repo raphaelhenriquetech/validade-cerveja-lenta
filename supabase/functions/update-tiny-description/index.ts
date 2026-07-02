@@ -124,6 +124,31 @@ serve(async (req) => {
       throw new Error(err || 'Erro ao atualizar descrição no Tiny');
     }
 
+    // Persist timestamp in DB using service role (bypasses RLS)
+    const nowIso = new Date().toISOString();
+    try {
+      const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+      const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      let upd;
+      if (batchId) {
+        upd = await admin
+          .from('beer_batches')
+          .update({ tiny_description_updated_at: nowIso })
+          .eq('id', batchId);
+      } else {
+        upd = await admin
+          .from('beer_batches')
+          .update({ tiny_description_updated_at: nowIso })
+          .eq('sku', sku)
+          .eq('archived', false);
+      }
+      if (upd.error) console.error('[update-tiny-description] DB update error:', upd.error);
+      else console.log('[update-tiny-description] DB timestamp saved for', batchId || `sku=${sku}`);
+    } catch (dbErr) {
+      console.error('[update-tiny-description] DB update exception:', dbErr);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -131,6 +156,7 @@ serve(async (req) => {
         sku,
         idProduto,
         validade: validadeBR,
+        tinyDescriptionUpdatedAt: nowIso,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
