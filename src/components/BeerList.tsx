@@ -69,6 +69,7 @@ export function BeerList({
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
   const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
+  const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -155,10 +156,13 @@ export function BeerList({
     if (!onUpdateTinyDescription || !batch.sku) return;
     setUpdatingDescBatches(prev => new Set(prev).add(batch.id));
     try {
-      await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
+      const success = await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
         beer_name: batch.beer_name,
         lot: batch.lot,
       });
+      if (success) {
+        setDescUpdatedBatches(prev => new Set(prev).add(batch.id));
+      }
     } finally {
       setUpdatingDescBatches(prev => {
         const n = new Set(prev);
@@ -472,19 +476,26 @@ export function BeerList({
                             {onUpdateTinyDescription && (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                                    onClick={() => handleUpdateDescription(batch)}
-                                    disabled={!batch.sku || updatingDescBatches.has(batch.id)}
-                                  >
-                                    {updatingDescBatches.has(batch.id) ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <CalendarClock className="h-4 w-4" />
+                                  <div className="relative">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                                      onClick={() => handleUpdateDescription(batch)}
+                                      disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                    >
+                                      {updatingDescBatches.has(batch.id) ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <CalendarClock className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                    {descUpdatedBatches.has(batch.id) && (
+                                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm">
+                                        OK
+                                      </span>
                                     )}
-                                  </Button>
+                                  </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   {batch.sku ? 'Enviar validade para descrição no Tiny' : 'Adicione um SKU'}
@@ -812,22 +823,29 @@ export function BeerList({
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <button
-                                          className={cn(
-                                            "transition-colors",
-                                            batch.sku && !updatingDescBatches.has(batch.id)
-                                              ? "text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
-                                              : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                        <div className="relative inline-flex">
+                                          <button
+                                            className={cn(
+                                              "transition-colors",
+                                              batch.sku && !updatingDescBatches.has(batch.id)
+                                                ? "text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
+                                                : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                            )}
+                                            onClick={() => handleUpdateDescription(batch)}
+                                            disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                          >
+                                            {updatingDescBatches.has(batch.id) ? (
+                                              <Loader2 className="h-5 w-5 animate-spin" />
+                                            ) : (
+                                              <CalendarClock className="h-5 w-5" />
+                                            )}
+                                          </button>
+                                          {descUpdatedBatches.has(batch.id) && (
+                                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm">
+                                              OK
+                                            </span>
                                           )}
-                                          onClick={() => handleUpdateDescription(batch)}
-                                          disabled={!batch.sku || updatingDescBatches.has(batch.id)}
-                                        >
-                                          {updatingDescBatches.has(batch.id) ? (
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                          ) : (
-                                            <CalendarClock className="h-5 w-5" />
-                                          )}
-                                        </button>
+                                        </div>
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         {batch.sku
