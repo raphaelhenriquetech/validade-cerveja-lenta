@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw, Scale, Loader2, AlertTriangle } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw, Scale, Loader2, AlertTriangle, CalendarClock } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
@@ -42,6 +42,7 @@ interface BeerListProps {
   onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onToggleArchive?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onSyncToTiny?: (sku: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
+  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
   syncingSkus?: Set<string>;
   filter: string;
   isArchivedView?: boolean;
@@ -54,6 +55,7 @@ export function BeerList({
   onToggleOlistSync, 
   onToggleArchive,
   onSyncToTiny,
+  onUpdateTinyDescription,
   syncingSkus = new Set(),
   filter,
   isArchivedView = false
@@ -66,6 +68,7 @@ export function BeerList({
   const [searchTerm, setSearchTerm] = useState('');
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
+  const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
