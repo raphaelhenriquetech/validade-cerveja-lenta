@@ -490,8 +490,11 @@ export function BeerList({
                                         <CalendarClock className="h-4 w-4" />
                                       )}
                                     </Button>
-                                    {descUpdatedBatches.has(batch.id) && (
-                                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm">
+                                    {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
+                                      <span
+                                        className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm"
+                                        title={batch.tiny_description_updated_at ? `Enviado em ${format(parseISO(batch.tiny_description_updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : 'Enviado'}
+                                      >
                                         OK
                                       </span>
                                     )}
