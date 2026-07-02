@@ -70,6 +70,8 @@ export function BeerList({
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
   const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
   const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _unused = descUpdatedBatches;
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
