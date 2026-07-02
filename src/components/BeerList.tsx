@@ -467,6 +467,30 @@ export function BeerList({
                                 {batch.sku ? 'Comparar estoque com Tiny' : 'Adicione um SKU para comparar'}
                               </TooltipContent>
                             </Tooltip>
+
+                            {/* Update Tiny Description with expiry */}
+                            {onUpdateTinyDescription && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                                    onClick={() => handleUpdateDescription(batch)}
+                                    disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                  >
+                                    {updatingDescBatches.has(batch.id) ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <CalendarClock className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {batch.sku ? 'Enviar validade para descrição no Tiny' : 'Adicione um SKU'}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           </>
                         )}
                       </div>
