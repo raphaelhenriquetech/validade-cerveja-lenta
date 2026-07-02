@@ -80,12 +80,20 @@ serve(async (req) => {
 
     const newDesc = (cleaned ? cleaned + '\n' : '') + `Validade: ${validadeBR}`;
 
-    // Step 3: update product
+    // Step 3: update product - Tiny requires sequencia + mandatory fields
     const produtoPayload = {
       produtos: [
         {
           produto: {
+            sequencia: 1,
             id: idProduto,
+            codigo: produto.codigo,
+            nome: produto.nome,
+            unidade: produto.unidade || 'UN',
+            preco: produto.preco ?? 0,
+            origem: produto.origem ?? '0',
+            situacao: produto.situacao || 'A',
+            tipo: produto.tipo || 'P',
             descricao_complementar: newDesc,
           },
         },
