@@ -13,6 +13,7 @@ export interface BeerBatch {
   olist_synced_at?: string | null;
   archived?: boolean;
   archived_at?: string | null;
+  tiny_description_updated_at?: string | null;
 }
 
 const logActivity = async (
@@ -419,7 +420,8 @@ export function useBeers() {
   const updateTinyDescription = useCallback(async (
     sku: string,
     expirationDate: string,
-    batchInfo?: { beer_name: string; lot: string }
+    batchInfo?: { beer_name: string; lot: string },
+    batchId?: string
   ) => {
     if (!sku) {
       toast({
@@ -451,6 +453,15 @@ export function useBeers() {
         title: 'Descrição atualizada no Tiny',
         description: `SKU ${sku}: validade ${data.validade} adicionada à descrição`,
       });
+
+      if (batchId) {
+        const nowIso = new Date().toISOString();
+        await supabase
+          .from('beer_batches')
+          .update({ tiny_description_updated_at: nowIso })
+          .eq('id', batchId);
+        setBatches(prev => prev.map(b => b.id === batchId ? { ...b, tiny_description_updated_at: nowIso } : b));
+      }
 
       await logActivity(
         'tiny_description_updated',

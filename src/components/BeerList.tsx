@@ -42,7 +42,7 @@ interface BeerListProps {
   onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onToggleArchive?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onSyncToTiny?: (sku: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
-  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
+  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }, batchId?: string) => Promise<boolean>;
   syncingSkus?: Set<string>;
   filter: string;
   isArchivedView?: boolean;
@@ -159,7 +159,7 @@ export function BeerList({
       const success = await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
         beer_name: batch.beer_name,
         lot: batch.lot,
-      });
+      }, batch.id);
       if (success) {
         setDescUpdatedBatches(prev => new Set(prev).add(batch.id));
       }
@@ -490,8 +490,11 @@ export function BeerList({
                                         <CalendarClock className="h-4 w-4" />
                                       )}
                                     </Button>
-                                    {descUpdatedBatches.has(batch.id) && (
-                                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm">
+                                    {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
+                                      <span
+                                        className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm"
+                                        title={batch.tiny_description_updated_at ? `Enviado em ${format(parseISO(batch.tiny_description_updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : 'Enviado'}
+                                      >
                                         OK
                                       </span>
                                     )}
@@ -840,8 +843,11 @@ export function BeerList({
                                               <CalendarClock className="h-5 w-5" />
                                             )}
                                           </button>
-                                          {descUpdatedBatches.has(batch.id) && (
-                                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm">
+                                          {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
+                                            <span
+                                              className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm"
+                                              title={batch.tiny_description_updated_at ? `Enviado em ${format(parseISO(batch.tiny_description_updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : 'Enviado'}
+                                            >
                                               OK
                                             </span>
                                           )}
