@@ -1,0 +1,1 @@
+ALTER TABLE public.beer_batches ADD COLUMN IF NOT EXISTS tiny_description_updated_at TIMESTAMPTZ;

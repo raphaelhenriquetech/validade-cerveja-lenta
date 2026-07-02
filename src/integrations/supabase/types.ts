@@ -60,6 +60,7 @@ export type Database = {
           olist_synced_at: string | null
           quantity: number
           sku: string | null
+          tiny_description_updated_at: string | null
         }
         Insert: {
           archived?: boolean | null
@@ -73,6 +74,7 @@ export type Database = {
           olist_synced_at?: string | null
           quantity: number
           sku?: string | null
+          tiny_description_updated_at?: string | null
         }
         Update: {
           archived?: boolean | null
@@ -86,6 +88,7 @@ export type Database = {
           olist_synced_at?: string | null
           quantity?: number
           sku?: string | null
+          tiny_description_updated_at?: string | null
         }
         Relationships: []
       }
