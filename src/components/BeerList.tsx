@@ -823,22 +823,29 @@ export function BeerList({
                                   <TooltipProvider>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <button
-                                          className={cn(
-                                            "transition-colors",
-                                            batch.sku && !updatingDescBatches.has(batch.id)
-                                              ? "text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
-                                              : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                        <div className="relative inline-flex">
+                                          <button
+                                            className={cn(
+                                              "transition-colors",
+                                              batch.sku && !updatingDescBatches.has(batch.id)
+                                                ? "text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
+                                                : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                                            )}
+                                            onClick={() => handleUpdateDescription(batch)}
+                                            disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                          >
+                                            {updatingDescBatches.has(batch.id) ? (
+                                              <Loader2 className="h-5 w-5 animate-spin" />
+                                            ) : (
+                                              <CalendarClock className="h-5 w-5" />
+                                            )}
+                                          </button>
+                                          {descUpdatedBatches.has(batch.id) && (
+                                            <span className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm">
+                                              OK
+                                            </span>
                                           )}
-                                          onClick={() => handleUpdateDescription(batch)}
-                                          disabled={!batch.sku || updatingDescBatches.has(batch.id)}
-                                        >
-                                          {updatingDescBatches.has(batch.id) ? (
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                          ) : (
-                                            <CalendarClock className="h-5 w-5" />
-                                          )}
-                                        </button>
+                                        </div>
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         {batch.sku
