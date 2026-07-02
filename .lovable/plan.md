@@ -1,57 +1,41 @@
+# Adicionar validade na descrição do produto no Olist Tiny
 
+## Objetivo
+Nova ação em cada lote (com SKU) que atualiza APENAS a **descrição do produto no Tiny**, adicionando/atualizando a linha de validade. Não altera estoque, não envia lote.
 
-# Revisao Completa da Landing Page - Logo Grande + Mobile Responsivo
+## Comportamento
 
-## Problemas Identificados
+- Botão de ação em cada linha de `BeerList.tsx` (só habilitado quando o lote tem SKU).
+- Ao clicar: chama nova edge function `update-tiny-description` passando `sku` e `expiration_date` do lote.
+- Se houver múltiplos lotes ativos com o mesmo SKU, a edge function usa a **validade mais próxima (mais urgente)** entre eles.
+- Formato inserido na descrição: `Validade: DD/MM/AAAA` (uma linha).
+- Se já existir uma linha "Validade: ..." na descrição, ela é **substituída**. Caso contrário, é **anexada ao final** da descrição existente, preservando o texto atual.
+- Feedback via toast (sucesso/erro) e registro em `activity_logs`.
 
-1. **Logo muito pequeno** - Atualmente `h-8` (32px), precisa aumentar ~300%
-2. **Responsividade mobile** precisa de revisao geral em todas as secoes
+## Arquivos
 
-## Alteracoes Planejadas
+### Criar
+- `supabase/functions/update-tiny-description/index.ts`
+  - Recebe `{ sku: string, expirationDate?: string }` (se `expirationDate` não vier, busca no banco a validade mais próxima entre os lotes ativos com esse SKU).
+  - Fluxo:
+    1. `produtos.pesquisa.php?pesquisa=<sku>` → obtém `id` do produto.
+    2. `produto.obter.php?id=<id>` → obtém a `descricao_complementar` (ou `descricao`) atual.
+    3. Monta nova descrição: remove regex `/^\s*Validade:.*$/m` e concatena `\nValidade: DD/MM/AAAA`.
+    4. `produto.alterar.php` com POST `token` + `produto` (JSON com `id` e `descricao_complementar` atualizada).
+  - Trata erros da API Tiny e retorna JSON com status.
 
-### 1. Logo no Header
-- Aumentar de `h-8` para `h-24` (96px) no desktop e `h-16` (64px) no mobile
-- Ajustar padding do header para acomodar o logo maior (`py-4`)
+### Editar
+- `supabase/config.toml` — registrar `[functions.update-tiny-description]` com `verify_jwt = false`.
+- `src/hooks/useBeers.ts` — adicionar função `updateTinyDescription(sku, expirationDate)` que invoca a edge function, mostra toast e loga atividade.
+- `src/components/BeerList.tsx`:
+  - Adicionar prop opcional `onUpdateTinyDescription?: (sku, expirationDate, batchInfo) => Promise<boolean>`.
+  - Novo state `updatingDescSkus: Set<string>` (visual de loading).
+  - Novo botão de ação na coluna "Ações" (ícone `FileText` ou `CalendarClock` da lucide), com Tooltip "Atualizar validade na descrição do Tiny". Desabilitado se não houver SKU.
+- `src/pages/Index.tsx` — passar `onUpdateTinyDescription` para `<BeerList />` conectando ao hook.
 
-### 2. Hero Section - Mobile
-- Reduzir padding vertical no mobile (`py-12 md:py-32`)
-- Titulo: `text-3xl md:text-6xl` para melhor leitura no mobile
-- Subtitulo: `text-base md:text-xl`
-- Botoes empilhados no mobile (ja esta com `flex-col sm:flex-row`)
+## Detalhes técnicos
 
-### 3. Funcionalidades - Mobile
-- Grid ja responsivo (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`) - OK
-- Reduzir padding da secao no mobile (`py-12 md:py-20`)
-
-### 4. Integracoes - Mobile
-- Mudar grid mobile de `grid-cols-2` para `grid-cols-1 sm:grid-cols-2 lg:grid-cols-5`
-- Cards com mais espaco interno no mobile
-
-### 5. Depoimentos / Carousel - Mobile
-- Reduzir padding lateral (`px-4 md:px-12`)
-- Carousel items ocupam 100% no mobile (ja esta `md:basis-1/2`)
-- Esconder setas do carousel no mobile e usar swipe
-- Alternativa: mostrar setas menores no mobile
-
-### 6. CTA Final - Mobile
-- Titulo: `text-2xl md:text-4xl`
-- Reduzir padding (`py-12 md:py-20`)
-
-### 7. Secoes gerais
-- Reduzir `mb-14` dos headers de secao para `mb-8 md:mb-14`
-- Titulos de secao: `text-2xl md:text-4xl`
-
-### Detalhes Tecnicos
-
-**Arquivo editado:** `src/pages/Landing.tsx`
-
-**Resumo das classes Tailwind alteradas:**
-- Header logo: `h-8` -> `h-16 md:h-24`
-- Header padding: `py-3` -> `py-4`
-- Hero: `py-20 md:py-32` -> `py-12 md:py-32`
-- H1: `text-4xl md:text-6xl` -> `text-3xl md:text-6xl`
-- Secoes: padding e titulos com breakpoints mobile/desktop
-- Integracoes grid: `grid-cols-2` -> `grid-cols-1 sm:grid-cols-2`
-- Carousel container: `px-12` -> `px-2 md:px-12`
-- CTA h2: `text-3xl md:text-4xl` -> `text-2xl md:text-4xl`
-
+- Campo escolhido no Tiny: `descricao_complementar` (campo de texto livre exibido no cadastro do produto). Confirmar via chamada real; se o Tiny do usuário não usar esse campo, ajustar para `descricao`.
+- A validade é formatada com `date-fns` (`format(parseISO(date), 'dd/MM/yyyy')`).
+- Segurança: reutiliza o secret existente `TINY_API_TOKEN`. Não expõe token no cliente.
+- Sem alteração de schema/tabelas.
