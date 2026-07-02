@@ -442,7 +442,7 @@ export function useBeers() {
 
     try {
       const response = await supabase.functions.invoke('update-tiny-description', {
-        body: { sku, expirationDate },
+        body: { sku, expirationDate, batchId },
       });
 
       if (response.error) throw new Error(response.error.message);
@@ -454,14 +454,14 @@ export function useBeers() {
         description: `SKU ${sku}: validade ${data.validade} adicionada à descrição`,
       });
 
+      const nowIso: string = data.tinyDescriptionUpdatedAt || new Date().toISOString();
       if (batchId) {
-        const nowIso = new Date().toISOString();
-        await supabase
-          .from('beer_batches')
-          .update({ tiny_description_updated_at: nowIso })
-          .eq('id', batchId);
         setBatches(prev => prev.map(b => b.id === batchId ? { ...b, tiny_description_updated_at: nowIso } : b));
+      } else {
+        setBatches(prev => prev.map(b => (b.sku === sku && !b.archived) ? { ...b, tiny_description_updated_at: nowIso } : b));
       }
+      // Refresh from DB to ensure persistence is reflected
+      fetchBatches();
 
       await logActivity(
         'tiny_description_updated',
@@ -480,7 +480,7 @@ export function useBeers() {
       });
       return false;
     }
-  }, [toast]);
+  }, [toast, fetchBatches]);
 
   return { 
     batches, 
