@@ -156,10 +156,13 @@ export function BeerList({
     if (!onUpdateTinyDescription || !batch.sku) return;
     setUpdatingDescBatches(prev => new Set(prev).add(batch.id));
     try {
-      await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
+      const success = await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
         beer_name: batch.beer_name,
         lot: batch.lot,
       });
+      if (success) {
+        setDescUpdatedBatches(prev => new Set(prev).add(batch.id));
+      }
     } finally {
       setUpdatingDescBatches(prev => {
         const n = new Set(prev);
