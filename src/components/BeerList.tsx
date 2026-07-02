@@ -148,6 +148,7 @@ export function BeerList({
   const handleSyncToTiny = async (batch: BeerBatch) => {
     if (onSyncToTiny && batch.sku) {
       await onSyncToTiny(batch.sku, { beer_name: batch.beer_name, lot: batch.lot });
+    }
   };
 
   const handleUpdateDescription = async (batch: BeerBatch) => {
