@@ -69,6 +69,7 @@ export function BeerList({
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
   const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
+  const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
