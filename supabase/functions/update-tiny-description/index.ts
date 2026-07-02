@@ -22,7 +22,7 @@ serve(async (req) => {
     const TINY_API_TOKEN = Deno.env.get('TINY_API_TOKEN');
     if (!TINY_API_TOKEN) throw new Error('TINY_API_TOKEN not configured');
 
-    const { sku, expirationDate } = await req.json();
+    const { sku, expirationDate, batchId } = await req.json();
     if (!sku) throw new Error('SKU é obrigatório');
     if (!expirationDate) throw new Error('Data de validade é obrigatória');
 
