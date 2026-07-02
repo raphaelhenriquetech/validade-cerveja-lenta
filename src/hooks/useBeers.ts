@@ -420,7 +420,8 @@ export function useBeers() {
   const updateTinyDescription = useCallback(async (
     sku: string,
     expirationDate: string,
-    batchInfo?: { beer_name: string; lot: string }
+    batchInfo?: { beer_name: string; lot: string },
+    batchId?: string
   ) => {
     if (!sku) {
       toast({
