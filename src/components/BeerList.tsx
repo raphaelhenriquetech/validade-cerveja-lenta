@@ -148,6 +148,22 @@ export function BeerList({
   const handleSyncToTiny = async (batch: BeerBatch) => {
     if (onSyncToTiny && batch.sku) {
       await onSyncToTiny(batch.sku, { beer_name: batch.beer_name, lot: batch.lot });
+  };
+
+  const handleUpdateDescription = async (batch: BeerBatch) => {
+    if (!onUpdateTinyDescription || !batch.sku) return;
+    setUpdatingDescBatches(prev => new Set(prev).add(batch.id));
+    try {
+      await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
+        beer_name: batch.beer_name,
+        lot: batch.lot,
+      });
+    } finally {
+      setUpdatingDescBatches(prev => {
+        const n = new Set(prev);
+        n.delete(batch.id);
+        return n;
+      });
     }
   };
 
