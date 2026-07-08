@@ -16,8 +16,9 @@ async function callTiny(endpoint: string, params: Record<string, string>): Promi
   const url = `${TINY_BASE}/${endpoint}?${qs}`;
 
   // Exponential backoff for rate limit (Tiny error code 6)
-  let delay = 500;
-  for (let attempt = 0; attempt < 4; attempt++) {
+  // Tiny allows ~60 req/min. Start slow to give room to recover.
+  let delay = 2500;
+  for (let attempt = 0; attempt < 6; attempt++) {
     const res = await fetch(url, { method: "GET" });
     if (!res.ok) throw new Error(`Tiny HTTP ${res.status}`);
     const data = await res.json();
@@ -28,8 +29,9 @@ async function callTiny(endpoint: string, params: Record<string, string>): Promi
       : (data?.retorno?.erros || []).map((e: any) => e?.erro?.codigo ?? e?.codigo);
     const isRateLimited = codes.some((c) => String(c) === "6");
     if (!isRateLimited) return data;
+    console.log(`[callTiny] rate limited, waiting ${delay}ms (attempt ${attempt + 1}/6)`);
     await sleep(delay);
-    delay *= 2;
+    delay = Math.min(delay * 2, 20000);
   }
   throw new Error("Tiny rate limit exceeded after retries");
 }
@@ -178,8 +180,14 @@ serve(async (req) => {
       }
     }
 
-    // Fetch sequentially to respect Tiny rate limits
+    // Fetch sequentially to respect Tiny rate limits (~60 req/min, 2 calls per SKU)
+    let rateLimitHit = false;
     for (const sku of toFetch) {
+      if (rateLimitHit) {
+        // Stop early — remaining SKUs will be retried on the next request
+        results[sku] = { image_url: null, product_name: null };
+        continue;
+      }
       try {
         const info = await fetchProductImage(sku, TINY_API_TOKEN);
         const not_found = !info.image_url;
@@ -195,11 +203,15 @@ serve(async (req) => {
           { onConflict: "sku" },
         );
         results[sku] = { image_url: info.image_url, product_name: info.product_name };
-        // Small pause between calls
-        await sleep(250);
+        // Pause between SKUs (each SKU = 2 Tiny calls) to stay under 60/min
+        await sleep(1200);
       } catch (err) {
-        console.error(`[get-tiny-product-image] SKU ${sku} failed:`, err);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[get-tiny-product-image] SKU ${sku} failed:`, msg);
         results[sku] = { image_url: null, product_name: null };
+        if (msg.includes("rate limit")) {
+          rateLimitHit = true;
+        }
       }
     }
 

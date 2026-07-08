@@ -65,37 +65,46 @@ export function useTinyImages(skus: string[]) {
       if (toFetch.length === 0) return;
       toFetch.forEach((s) => fetchedRef.current.add(s));
 
-      const { data, error } = await supabase.functions.invoke("get-tiny-product-image", {
-        body: { skus: toFetch },
-      });
-      if (cancelled) return;
+      // Fetch in small batches so images appear progressively and
+      // we don't hit the edge function timeout with many SKUs.
+      const BATCH_SIZE = 5;
+      for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
+        if (cancelled) return;
+        const batch = toFetch.slice(i, i + BATCH_SIZE);
+        const { data, error } = await supabase.functions.invoke("get-tiny-product-image", {
+          body: { skus: batch },
+        });
+        if (cancelled) return;
 
-      if (error) {
-        console.error("[useTinyImages] fetch failed:", error);
+        if (error) {
+          console.error("[useTinyImages] fetch failed:", error);
+          setImages((prev) => {
+            const next = { ...prev };
+            for (const s of batch) {
+              next[s] = { ...(next[s] || { image_url: null, product_name: null }), loading: false };
+              // Allow retry on next mount since request failed entirely
+              fetchedRef.current.delete(s);
+            }
+            return next;
+          });
+          continue;
+        }
+
+        const results: Record<string, { image_url: string | null; product_name: string | null }> =
+          data?.results || {};
         setImages((prev) => {
           const next = { ...prev };
-          for (const s of toFetch) {
-            next[s] = { ...(next[s] || { image_url: null, product_name: null }), loading: false };
+          for (const sku of batch) {
+            const r = results[sku];
+            next[sku] = {
+              image_url: r?.image_url ?? null,
+              product_name: r?.product_name ?? next[sku]?.product_name ?? null,
+              loading: false,
+            };
           }
           return next;
         });
-        return;
       }
-
-      const results: Record<string, { image_url: string | null; product_name: string | null }> =
-        data?.results || {};
-      setImages((prev) => {
-        const next = { ...prev };
-        for (const sku of toFetch) {
-          const r = results[sku];
-          next[sku] = {
-            image_url: r?.image_url ?? null,
-            product_name: r?.product_name ?? next[sku]?.product_name ?? null,
-            loading: false,
-          };
-        }
-        return next;
-      });
     })();
 
     return () => {
