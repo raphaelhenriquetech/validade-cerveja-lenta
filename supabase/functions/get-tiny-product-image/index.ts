@@ -180,8 +180,14 @@ serve(async (req) => {
       }
     }
 
-    // Fetch sequentially to respect Tiny rate limits
+    // Fetch sequentially to respect Tiny rate limits (~60 req/min, 2 calls per SKU)
+    let rateLimitHit = false;
     for (const sku of toFetch) {
+      if (rateLimitHit) {
+        // Stop early — remaining SKUs will be retried on the next request
+        results[sku] = { image_url: null, product_name: null };
+        continue;
+      }
       try {
         const info = await fetchProductImage(sku, TINY_API_TOKEN);
         const not_found = !info.image_url;
@@ -197,11 +203,15 @@ serve(async (req) => {
           { onConflict: "sku" },
         );
         results[sku] = { image_url: info.image_url, product_name: info.product_name };
-        // Small pause between calls
-        await sleep(250);
+        // Pause between SKUs (each SKU = 2 Tiny calls) to stay under 60/min
+        await sleep(1200);
       } catch (err) {
-        console.error(`[get-tiny-product-image] SKU ${sku} failed:`, err);
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[get-tiny-product-image] SKU ${sku} failed:`, msg);
         results[sku] = { image_url: null, product_name: null };
+        if (msg.includes("rate limit")) {
+          rateLimitHit = true;
+        }
       }
     }
 
