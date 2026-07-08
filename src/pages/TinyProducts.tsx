@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,9 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Search, RefreshCw, Loader2, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, RefreshCw, Loader2, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import Footer from '@/components/Footer';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface TinyProduct {
   id: string;
@@ -95,32 +93,7 @@ const TinyProducts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Modern Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="container py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-              <Package className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground tracking-tight">Produtos Olist Tiny</h1>
-              <p className="text-sm text-muted-foreground">Consulta de produtos do ERP</p>
-            </div>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-full pb-20">
       <main className="container py-6 space-y-6">
         {/* Search Card */}
         <Card className="border border-border/50 shadow-sm animate-fade-in">
