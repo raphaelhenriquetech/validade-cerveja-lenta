@@ -65,6 +65,7 @@ export function BeerList({
   const [editBeerName, setEditBeerName] = useState('');
   const [editExpirationDate, setEditExpirationDate] = useState('');
   const [editSku, setEditSku] = useState('');
+  const [editLot, setEditLot] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
