@@ -41,13 +41,43 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
     { id: 'ok', title: 'OK', subtitle: 'Mais de 30 dias', count: stats.ok, icon: CheckCircle, tone: 'ok', pulse: false },
   ] as const;
 
-  const toneClasses: Record<string, { ring: string; iconBg: string; iconFg: string; countFg: string; accent: string }> = {
-    primary:   { ring: 'ring-primary/40',           iconBg: 'bg-primary/10',           iconFg: 'text-primary',           countFg: 'text-primary',           accent: 'bg-primary' },
-    expired:   { ring: 'ring-destructive/40',       iconBg: 'bg-destructive/10',       iconFg: 'text-destructive',       countFg: 'text-destructive',       accent: 'bg-destructive' },
-    critical:  { ring: 'ring-status-critical/40',   iconBg: 'bg-status-critical/10',   iconFg: 'text-status-critical',   countFg: 'text-status-critical',   accent: 'bg-status-critical' },
-    attention: { ring: 'ring-status-attention/40',  iconBg: 'bg-status-attention/10',  iconFg: 'text-status-attention',  countFg: 'text-status-attention',  accent: 'bg-status-attention' },
-    alert:     { ring: 'ring-accent/50',            iconBg: 'bg-accent/15',            iconFg: 'text-accent',            countFg: 'text-accent',            accent: 'bg-accent' },
-    ok:        { ring: 'ring-status-ok/40',         iconBg: 'bg-status-ok/10',         iconFg: 'text-status-ok',         countFg: 'text-status-ok',         accent: 'bg-status-ok' },
+  const toneClasses: Record<string, { gradient: string; ring: string; iconBg: string; iconFg: string; text: string; subtext: string; count: string }> = {
+    primary: {
+      gradient: 'bg-gradient-to-br from-slate-500 to-slate-700 dark:from-slate-600 dark:to-slate-800',
+      ring: 'ring-slate-300 dark:ring-slate-500',
+      iconBg: 'bg-white/20', iconFg: 'text-white',
+      text: 'text-white', subtext: 'text-white/80', count: 'text-white',
+    },
+    expired: {
+      gradient: 'bg-gradient-to-br from-red-500 to-rose-700',
+      ring: 'ring-red-300',
+      iconBg: 'bg-white/20', iconFg: 'text-white',
+      text: 'text-white', subtext: 'text-white/85', count: 'text-white',
+    },
+    critical: {
+      gradient: 'bg-gradient-to-br from-orange-500 to-red-500',
+      ring: 'ring-orange-300',
+      iconBg: 'bg-white/20', iconFg: 'text-white',
+      text: 'text-white', subtext: 'text-white/85', count: 'text-white',
+    },
+    attention: {
+      gradient: 'bg-gradient-to-br from-amber-400 to-orange-500',
+      ring: 'ring-amber-300',
+      iconBg: 'bg-white/25', iconFg: 'text-white',
+      text: 'text-white', subtext: 'text-white/90', count: 'text-white',
+    },
+    alert: {
+      gradient: 'bg-gradient-to-br from-yellow-400 to-amber-500',
+      ring: 'ring-yellow-300',
+      iconBg: 'bg-white/25', iconFg: 'text-white',
+      text: 'text-white', subtext: 'text-white/90', count: 'text-white',
+    },
+    ok: {
+      gradient: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+      ring: 'ring-emerald-300',
+      iconBg: 'bg-white/20', iconFg: 'text-white',
+      text: 'text-white', subtext: 'text-white/85', count: 'text-white',
+    },
   };
 
   return (
@@ -61,27 +91,29 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
             key={card.id}
             type="button"
             className={cn(
-              'group relative overflow-hidden text-left rounded-2xl border border-border bg-card p-4 md:p-5',
-              'transition-all duration-200 shadow-sm hover:shadow-emerald hover:-translate-y-0.5',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-              isActive && `ring-2 ${t.ring} -translate-y-0.5 shadow-emerald`,
+              'group relative overflow-hidden text-left rounded-2xl p-4 md:p-5',
+              t.gradient,
+              'transition-all duration-200 shadow-md hover:shadow-xl hover:-translate-y-1',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+              isActive && `ring-4 ${t.ring} -translate-y-1 shadow-xl scale-[1.02]`,
               card.pulse && 'pulse-glow'
             )}
             style={{ animationDelay: `${index * 40}ms` }}
             onClick={() => onFilterChange(isActive ? 'all' : card.id)}
           >
-            <span className={cn('absolute inset-x-0 top-0 h-1', t.accent)} />
-            <div className="flex items-start justify-between gap-2">
-              <div className={cn('p-2 rounded-xl', t.iconBg)}>
+            {/* Decorative shine */}
+            <span className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative flex items-start justify-between gap-2">
+              <div className={cn('p-2 rounded-xl backdrop-blur-sm', t.iconBg)}>
                 <Icon className={cn('h-5 w-5', t.iconFg)} />
               </div>
-              <span className={cn('font-heading text-3xl md:text-4xl font-bold leading-none tabular-nums', t.countFg)}>
+              <span className={cn('font-heading text-3xl md:text-4xl font-bold leading-none tabular-nums drop-shadow-sm', t.count)}>
                 {card.count}
               </span>
             </div>
-            <div className="mt-4">
-              <p className="text-sm font-semibold text-foreground">{card.title}</p>
-              <p className="text-xs text-muted-foreground">{card.subtitle}</p>
+            <div className="relative mt-4">
+              <p className={cn('text-sm font-semibold', t.text)}>{card.title}</p>
+              <p className={cn('text-xs', t.subtext)}>{card.subtitle}</p>
             </div>
           </button>
         );
