@@ -34,6 +34,8 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTinyImages } from '@/hooks/useTinyImages';
+import { BeerBatchThumb } from '@/components/BeerBatchThumb';
 
 interface BeerListProps {
   batches: BeerBatch[];
@@ -73,6 +75,20 @@ export function BeerList({
   const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  // Fetch Tiny product images by SKU (cached in tiny_product_cache)
+  const skusForImages = useMemo(
+    () => Array.from(new Set(batches.map((b) => b.sku?.trim()).filter((s): s is string => !!s))),
+    [batches],
+  );
+  const { images: tinyImages, refetchImage } = useTinyImages(skusForImages);
+
+  const getImageForBatch = (batch: BeerBatch) => {
+    const sku = batch.sku?.trim();
+    if (!sku) return { image_url: null, loading: false };
+    const entry = tinyImages[sku];
+    return { image_url: entry?.image_url ?? null, loading: entry?.loading ?? true };
+  };
 
   // First filter by search term
   const searchFilteredBatches = useMemo(() => {
@@ -334,13 +350,15 @@ export function BeerList({
                       : "border-border"
                   )}
                 >
-                  {/* Header: Nome da cerveja + Badge de status */}
+                  {/* Header: Foto + Nome da cerveja + Badge de status */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className={cn(
-                        "w-2 h-2 rounded-full flex-shrink-0",
-                        isArchivedView ? "bg-muted-foreground" : "bg-primary"
-                      )} />
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <BeerBatchThumb
+                        imageUrl={getImageForBatch(batch).image_url}
+                        loading={getImageForBatch(batch).loading}
+                        alt={batch.beer_name}
+                        size="md"
+                      />
                       <span className="font-medium text-foreground truncate">{batch.beer_name}</span>
                     </div>
                     {!isArchivedView && <ExpirationBadge expirationDate={batch.expiration_date} />}
@@ -652,10 +670,12 @@ export function BeerList({
                         {index === 0 ? (
                           <TableCell rowSpan={beerBatches.length} className="p-4 pl-6 text-sm text-gray-900 dark:text-white font-medium align-top">
                             <div className="flex items-center gap-3">
-                              <span className={cn(
-                                "w-2 h-2 rounded-full flex-shrink-0",
-                                isArchivedView ? "bg-gray-400" : "bg-primary"
-                              )}></span>
+                              <BeerBatchThumb
+                                imageUrl={getImageForBatch(beerBatches[0]).image_url}
+                                loading={getImageForBatch(beerBatches[0]).loading}
+                                alt={beerName}
+                                size="md"
+                              />
                               <span>{beerName}</span>
                               {beerBatches.length > 1 && (
                                 <Badge variant="secondary" className="text-xs">

@@ -1,122 +1,94 @@
-
-# StockBrew — Redesign Emerald + Fix Edição de Lote
+# Miniatura do produto na listagem via Tiny
 
 ## Objetivo
-1. Permitir alterar o **código do lote** no diálogo de edição (hoje só quantidade/nome/validade/SKU).
-2. Redesign completo com paleta **Emerald Prestige**, tipografia **Space Grotesk + DM Sans** e novo shell de **dashboard com sidebar**.
-3. Mobile impecável: sidebar vira drawer, tudo em cards, alvos de toque ≥44px.
-4. Não quebrar nada: integrações Tiny (sync estoque, comparar, atualizar descrição/validade), Olist, J3/Tracken, WhatsApp, Resend, PWA, ativity_logs, dark mode.
 
-## Fix da edição de lote
+Ao lado do nome de cada lote, exibir uma **miniatura da foto principal do produto** buscada do Tiny pelo SKU. Pequena (~40x40), nítida, com fallback quando o SKU não tem imagem cadastrada.
 
-- `BeerList.tsx`: adicionar estado `editLot`, popular ao abrir o dialog, novo `<Input>` "Código do Lote" no `Dialog` de edição, incluir `lot` no payload do `onUpdateBatch`.
-- `useBeers.updateBatch`: já aceita `Partial<BeerBatch>`. Confirmar que o log de atividade registra a mudança de `lot` (comparar `oldBatch.lot` vs novo) — se não registrar, adicionar entrada.
-- Validação: `lot` obrigatório e trim; bloquear salvar vazio.
-
-## Direção visual
-
-**Paleta Emerald Prestige** (via tokens HSL em `src/index.css`, sem cores hardcoded):
-- `--primary`: emerald 160 84% 24% (`#064e3b`)
-- `--primary-glow`: 160 55% 32% (`#0d7a5f`)
-- `--accent` (dourado): 45 55% 54% (`#c9a84c`)
-- `--background` claro: 45 45% 96% (`#f5f0e0` suavizado)
-- `--background` escuro: 160 20% 8%
-- Status: crítico #b91c1c, atenção #d97706, alerta dourado, ok emerald
-- Sombra "elegant" com tinta emerald para cards/hover
-
-**Tipografia** via `@fontsource/space-grotesk` + `@fontsource/dm-sans` importados em `main.tsx`; Tailwind `fontFamily.heading = Space Grotesk`, `fontFamily.sans = DM Sans`. Aplicar `font-heading` em títulos/H1‑H3, DM Sans no corpo. Remover Inter.
-
-**Motion**: `framer-motion` já em uso (se ausente, instalar). Fade+slide nos cards do dashboard, hover-lift nas linhas de tabela, transição suave no sidebar collapse.
-
-## Shell com sidebar (shadcn)
-
-Novo `src/components/layout/AppLayout.tsx` com `SidebarProvider` + `AppSidebar` + `<Outlet/>`. Refatorar `App.tsx` para envolver rotas protegidas nesse layout.
-
-`AppSidebar` (`collapsible="icon"`, drawer no mobile):
-- Logo StockBrew no topo (usa `stockbrew-logo-light/dark`).
-- Grupo **Estoque**: Home (`/`), Produtos Tiny (`/produtos-tiny`).
-- Grupo **Log​ística**: Etiquetas J3 (`/etiquetas-j3`).
-- Grupo **Sistema**: Configurações (`/configuracoes`).
-- Rodapé do sidebar: usuário logado + botão Sair + `ThemeToggle`.
-- `NavLink` com `isActive` destacando em emerald.
-
-Header slim (h-14): `SidebarTrigger` + breadcrumb da rota + ações contextuais da página (ex.: botão "Gerar Relatório" na Home).
+## Como vai funcionar
 
 ```text
-┌──────┬──────────────────────────────────────┐
-│ Logo │ [☰] Home                    [Report] │
-│ ──── ├──────────────────────────────────────┤
-│ 🏠   │                                      │
-│ 📦   │       Dashboard cards                │
-│ 🚚   │       Formulário compacto            │
-│ ⚙️   │       Tabela / cards de lotes        │
-│      │                                      │
-│ ──── │                                      │
-│ 👤   │                                      │
-└──────┴──────────────────────────────────────┘
+Card do lote  ┌────────────────────────────────────────┐
+              │ [🖼️ 40x40]  IPA Session 350ml          │
+              │  nítida     Lote L2508 • 24 un         │
+              │  arred.     Val. 12/08/2026            │
+              └────────────────────────────────────────┘
 ```
 
-## Home refeita
+Fluxo de dados:
 
-- **KPIs no topo (bento)**: 4 cards clicáveis (Vencidos, Crítico ≤7d, ≤15d, ≤30d) + card "OK >30d". Ícone circular, número grande em Space Grotesk, delta sutil. Cliques mantêm o filtro atual.
-- **Formulário "Novo Lote"** em card colapsável (aberto por padrão no desktop, fechado no mobile com botão flutuante `+` fixo bottom-right).
-- **Lista**:
-  - Desktop: tabela com colunas revisadas, linhas com hover-lift, badges menores, ações agrupadas num menu overflow (`⋯`) quando >3 ícones para reduzir ruído. Manter visíveis: editar, sync Tiny, atualizar validade (com bolinha OK persistida), comparar estoque; mover archive/delete para o menu.
-  - Mobile: cards já existentes redesenhados — header limpo, chips de status coloridos, ações em row scrollável com labels curtos.
-- Tabs "Ativos / Arquivados" viram segmento pill no topo da lista.
-- Busca com ícone à esquerda, atalho `⌘K` (nice-to-have, opcional).
+```text
+BeerList renderiza
+      │
+      ▼
+Para cada SKU único da lista:
+   consulta cache local (tabela tiny_product_cache)
+      │
+      ├─ Tem e fresco (< 7 dias) ──► usa image_url direto
+      │
+      └─ Não tem OU expirou
+             │
+             ▼
+       invoca edge function get-tiny-product-image({ sku })
+             │
+             ├─ produtos.pesquisa.php?pesquisa=SKU  → id
+             ├─ produto.obter.php?id=X              → anexos[0].anexo
+             │
+             ▼
+       upsert em tiny_product_cache (sku, image_url, fetched_at)
+             │
+             ▼
+       retorna URL, front atualiza o card
+```
 
-## Configurações, Tiny, J3
+## Detalhes técnicos
 
-Mesmo shell + tokens. Sem mudança de lógica. Ajustar apenas:
-- Cabeçalho da página unificado (título + descrição + ações à direita).
-- Cards com `bg-card`, `border-border`, `shadow-sm`.
-- Formulários com espaçamento consistente (`space-y-4`), labels DM Sans, inputs h-11.
+### Backend
 
-## Mobile checklist
+**Nova tabela `tiny_product_cache`** (uma linha por SKU — evita re-baixar por lote):
+- `sku` (PK), `image_url` (texto), `product_name`, `tiny_product_id`, `fetched_at`, `not_found` (bool, para não ficar retentando SKUs sem imagem).
+- RLS: leitura para `authenticated`, escrita apenas `service_role` (a edge function faz o upsert).
 
-- Sidebar vira drawer (shadcn já faz).
-- KPIs em 2 colunas no mobile, 5 no desktop.
-- Form colapsável + FAB de adicionar.
-- Tabelas → cards (já existe, apenas repolir).
-- Botões de ação: ícone + label curto, min-h-11.
-- Sticky header simples com trigger + título da rota.
-- Testar 360px, 414px e 768px.
+**Nova edge function `get-tiny-product-image`**:
+- Aceita `{ skus: string[] }` (batch — busca várias miniaturas de uma vez, uma requisição do frontend por render).
+- Para cada SKU: chama `produtos.pesquisa.php?pesquisa=SKU`, pega `id` do primeiro match, chama `produto.obter.php?id=…`, extrai `anexos[0].anexo` (URL da imagem principal).
+- Usa **exponential backoff** para o erro `6` (rate limit) do Tiny, mesmo padrão de `compare-tiny-stock`.
+- Upsert no cache, inclusive `not_found = true` quando o SKU não retorna anexos.
+- Retorna `{ [sku]: { image_url, product_name } | null }`.
 
-## Preservar (não mexer na lógica)
+### Frontend
 
-- `useBeers`, `useJ3Orders`, `useJ3SellerConfig`, `useActivityLogs`, `useAuth`, `usePWA`.
-- Todas as edge functions e chamadas Supabase.
-- `ExpirationBadge`, `ReportGenerator`, `pdfGenerator`.
-- Rotas atuais (`/`, `/configuracoes`, `/produtos-tiny`, `/etiquetas-j3`, `/auth`, `/install`, `/landing`).
-- Comportamento do OK persistido do envio de validade (bolinha verde no ícone).
+**Novo hook `useTinyImages(skus: string[])`**:
+- Lê `tiny_product_cache` no primeiro render, devolve `Record<sku, imageUrl>`.
+- Para SKUs faltantes ou com cache > 7 dias, chama `get-tiny-product-image` uma vez (dedup por render), atualiza estado.
+- Expõe `refetchImage(sku)` para o botão "Atualizar imagem".
 
-## Arquivos afetados
+**`BeerList.tsx` (desktop + mobile)**:
+- Nova coluna/elemento à esquerda do nome: `<img>` 40x40, `rounded-lg object-cover`, `loading="lazy"`, `decoding="async"`.
+- Fallback: quando `image_url` é `null`, mostra ícone de cerveja emerald sobre um quadrado `bg-muted` do mesmo tamanho (mantém alinhamento).
+- Skeleton pulsante enquanto `useTinyImages` está carregando.
+- Botão "Atualizar imagem" dentro do menu de ações do lote (dispara `refetchImage`).
 
-**Criar**
-- `src/components/layout/AppLayout.tsx`
-- `src/components/layout/AppSidebar.tsx`
-- `src/components/layout/PageHeader.tsx` (título+ações reutilizável)
+**Nitidez sem peso**:
+- O Tiny devolve URLs grandes; usamos `<img>` direto com `width={40} height={40}` — o navegador redimensiona sem baixar cópia menor, mas para 40px a foto fica bem nítida em telas retina.
+- `object-cover` centraliza. Sem processamento no servidor — mantém o design leve.
 
-**Editar**
-- `src/index.css` — tokens Emerald + fontes + sombras
-- `tailwind.config.ts` — `fontFamily.heading/sans`
-- `src/main.tsx` — imports `@fontsource/space-grotesk`, `@fontsource/dm-sans`
-- `src/App.tsx` — rotas protegidas dentro de `AppLayout`
-- `src/pages/Index.tsx` — remover header próprio, usar `PageHeader`; refazer grid de KPIs, FAB, tabs pill
-- `src/pages/Settings.tsx`, `TinyProducts.tsx`, `J3Orders.tsx` — usar `PageHeader`, remover navegação duplicada
-- `src/components/BeerForm.tsx` — versão compacta / colapsável
-- `src/components/BeerList.tsx` — **adicionar edição do lote**, menu overflow de ações, repolir mobile cards
-- `src/components/ExpirationDashboard.tsx` — novo layout bento dos KPIs
-- `src/components/ExpirationBadge.tsx` — usar tokens novos
-- `src/components/ThemeToggle.tsx` — ok, só revisar posição no sidebar footer
-- `src/components/Footer.tsx` — versão minimal (o layout tem sidebar agora)
+## Arquivos
 
-**Não tocar**
-- `src/integrations/supabase/*`, `supabase/functions/*`, `supabase/config.toml`, `.env`, `supabase/migrations/*`.
+**Migração**
+- Cria `public.tiny_product_cache` com GRANT + RLS conforme padrão.
+
+**Backend**
+- `supabase/functions/get-tiny-product-image/index.ts` (novo).
+
+**Frontend**
+- `src/hooks/useTinyImages.ts` (novo).
+- `src/components/BeerList.tsx`: thumbnail + skeleton + item de menu "Atualizar imagem".
+- `src/components/BeerBatchThumb.tsx` (pequeno componente reutilizável para thumbnail + fallback).
 
 ## Validação
 
-- Playwright headless em `localhost:8080`: login, editar lote (mudar código), sync Tiny, atualizar validade (ver OK persistir após reload), navegar entre páginas via sidebar, colapsar sidebar, viewport 375/768/1280.
-- Verificar dark mode em todas as páginas.
-- `bun run build` limpo.
+1. Abrir a Home com lotes que têm SKU → miniaturas aparecem em <2s (primeira vez) e instantâneas nas próximas visitas (cache).
+2. SKU sem imagem no Tiny → mostra o fallback com ícone, sem quebrar.
+3. Menu do lote → "Atualizar imagem" → força novo fetch e a imagem é substituída.
+4. Rate limit do Tiny → função retenta com backoff, sem erro na UI.
+5. Mobile (cards) → miniatura no canto superior esquerdo do card, mantém legibilidade do texto.

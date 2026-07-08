@@ -242,6 +242,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tiny_product_cache: {
+        Row: {
+          created_at: string
+          fetched_at: string
+          image_url: string | null
+          not_found: boolean
+          product_name: string | null
+          sku: string
+          tiny_product_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fetched_at?: string
+          image_url?: string | null
+          not_found?: boolean
+          product_name?: string | null
+          sku: string
+          tiny_product_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fetched_at?: string
+          image_url?: string | null
+          not_found?: boolean
+          product_name?: string | null
+          sku?: string
+          tiny_product_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       whatsapp_settings: {
         Row: {
           apikey: string
