@@ -1,43 +1,156 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "./AppSidebar";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Home, Package, Settings as SettingsIcon, LogOut, Beer, Menu, X } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const routeTitles: Record<string, { title: string; subtitle: string }> = {
-  "/": { title: "Estoque", subtitle: "Lotes ativos e validades" },
-  "/configuracoes": { title: "Configurações", subtitle: "Emails, WhatsApp e integrações" },
-  "/produtos-tiny": { title: "Produtos Tiny", subtitle: "Consulta ao Olist Tiny ERP" },
-  "/etiquetas-j3": { title: "Etiquetas J3", subtitle: "Geração de etiquetas de envio" },
-};
+const navItems = [
+  { title: "Estoque", url: "/", icon: Home },
+  { title: "Produtos Tiny", url: "/produtos-tiny", icon: Package },
+  { title: "Configurações", url: "/configuracoes", icon: SettingsIcon },
+];
 
 export default function AppLayout() {
   const { pathname } = useLocation();
-  const meta = routeTitles[pathname] ?? { title: "StockBrew", subtitle: "" };
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const { error } = await signOut();
+    if (error) toast({ title: "Erro ao sair", description: error.message, variant: "destructive" });
+  };
+
+  const isActive = (url: string) => (url === "/" ? pathname === "/" : pathname.startsWith(url));
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="sticky top-0 z-30 h-14 flex items-center gap-3 border-b border-border/60 bg-background/85 backdrop-blur-md px-3 md:px-6">
-            <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-            <div className="min-w-0 flex-1">
-              <h1 className="font-heading text-base md:text-lg font-semibold text-foreground truncate leading-tight">
-                {meta.title}
-              </h1>
-              {meta.subtitle && (
-                <p className="text-[11px] md:text-xs text-muted-foreground truncate leading-tight">
-                  {meta.subtitle}
-                </p>
-              )}
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+        <div className="max-w-screen-2xl mx-auto flex items-center gap-4 px-4 md:px-6 h-16">
+          {/* Brand */}
+          <NavLink to="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-emerald">
+              <Beer className="h-5 w-5 text-primary-foreground" />
             </div>
-          </header>
+            <div className="flex flex-col leading-tight">
+              <span className="font-heading text-base font-bold text-foreground">Stock Brew</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                Cerveja Lenta Tech
+              </span>
+            </div>
+          </NavLink>
 
-          <main className="flex-1 min-w-0">
-            <Outlet />
-          </main>
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1 ml-4">
+            {navItems.map((item) => {
+              const active = isActive(item.url);
+              return (
+                <NavLink
+                  key={item.url}
+                  to={item.url}
+                  end={item.url === "/"}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.title}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
+
+          <div className="flex-1" />
+
+          <div className="hidden md:flex items-center gap-1">
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <div className="h-7 w-7 rounded-full bg-gradient-gold flex items-center justify-center text-[11px] font-bold text-accent-foreground">
+                    {user?.email?.[0]?.toUpperCase() ?? "U"}
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" /> Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Mobile trigger */}
+          <button
+            onClick={() => setMobileOpen((v) => !v)}
+            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+            aria-label="Menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-      </div>
-    </SidebarProvider>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-border/60 bg-background">
+            <nav className="max-w-screen-2xl mx-auto px-4 py-3 flex flex-col gap-1">
+              {navItems.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <NavLink
+                    key={item.url}
+                    to={item.url}
+                    end={item.url === "/"}
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.title}
+                  </NavLink>
+                );
+              })}
+              <div className="mt-2 pt-2 border-t border-border/60 flex items-center justify-between">
+                <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+                <div className="flex items-center gap-1">
+                  <ThemeToggle />
+                  <button
+                    onClick={handleLogout}
+                    className="p-2 rounded-lg text-destructive hover:bg-destructive/10"
+                    aria-label="Sair"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-1 min-w-0">
+        <Outlet />
+      </main>
+    </div>
   );
 }

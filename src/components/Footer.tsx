@@ -1,7 +1,7 @@
 const Footer = () => {
   return (
     <footer className="text-center p-4 text-xs text-muted-foreground">
-      Feito por Cerveja Lenta Tech
+      Stock Brew — Criado por Cerveja Lenta Tech
     </footer>
   );
 };

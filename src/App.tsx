@@ -10,7 +10,7 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import TinyProducts from "./pages/TinyProducts";
-import J3Orders from "./pages/J3Orders";
+
 import Install from "./pages/Install";
 import Landing from "./pages/Landing";
 import AppLayout from "./components/layout/AppLayout";
@@ -51,7 +51,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/configuracoes" element={<Settings />} />
               <Route path="/produtos-tiny" element={<TinyProducts />} />
-              <Route path="/etiquetas-j3" element={<J3Orders />} />
+              
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

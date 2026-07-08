@@ -52,16 +52,6 @@ const features = [
     description: "Receba relatórios por e-mail e WhatsApp nos horários programados ou gere PDFs sob demanda.",
   },
   {
-    icon: Tag,
-    title: "Etiquetas J3/Tracken",
-    description: "Crie pedidos de envio, gere etiquetas em PDF e consulte cobertura de CEP automaticamente.",
-  },
-  {
-    icon: MapPin,
-    title: "Consulta de CEP",
-    description: "Verifique cobertura de entrega e custo de frete diretamente pela API J3/Tracken.",
-  },
-  {
     icon: History,
     title: "Histórico de Atividades",
     description: "Auditoria completa de todas as ações: criação, edição, exclusão e arquivamento de lotes.",
@@ -70,7 +60,7 @@ const features = [
 
 const integrations = [
   { icon: Package, name: "Tiny ERP", description: "Sincronização bidirecional de estoque por SKU" },
-  { icon: Truck, name: "J3 / Tracken", description: "Etiquetas e rastreio de envios" },
+  
   { icon: MessageCircle, name: "WhatsApp", description: "Relatórios automáticos via CallMeBot" },
   { icon: Mail, name: "Email (Resend)", description: "Notificações e relatórios por e-mail" },
   { icon: Smartphone, name: "PWA", description: "Instale no celular como um app nativo" },
@@ -100,7 +90,7 @@ const testimonials = [
   {
     name: "Carlos A.",
     role: "Brew House Microbrewery",
-    text: "Gerar etiquetas J3 era um pesadelo manual. Com o StockBrew, em 2 cliques tenho tudo pronto pra envio.",
+    text: "O painel de validades por cores facilita demais a rotina. Nossa equipe adotou em 1 dia.",
     rating: 5,
   },
   {
@@ -150,7 +140,7 @@ const Landing = () => {
           </h1>
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 px-2">
             Gerencie lotes, automatize relatórios, sincronize estoque com o Tiny ERP e gere
-            etiquetas de envio — tudo em um só lugar.
+            relatórios automáticos — tudo em um só lugar.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base px-8">
