@@ -140,7 +140,7 @@ const Landing = () => {
           </h1>
           <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 px-2">
             Gerencie lotes, automatize relatórios, sincronize estoque com o Tiny ERP e gere
-            etiquetas de envio — tudo em um só lugar.
+            relatórios automáticos — tudo em um só lugar.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base px-8">
