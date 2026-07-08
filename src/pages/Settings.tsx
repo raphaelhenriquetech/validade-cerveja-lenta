@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Mail, Plus, Trash2, Send, Loader2, Settings as SettingsIcon, MessageCircle } from 'lucide-react';
+import { Mail, Plus, Trash2, Send, Loader2, MessageCircle } from 'lucide-react';
 import { ActivityHistory } from '@/components/ActivityHistory';
 import { useActivityLogs } from '@/hooks/useActivityLogs';
 import Footer from '@/components/Footer';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { z } from 'zod';
 
 const emailSchema = z.object({
@@ -296,32 +294,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Modern Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-40">
-        <div className="container py-4">
-          <div className="flex items-center gap-4">
-            <Link to="/">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
-              <SettingsIcon className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-foreground tracking-tight">Configurações</h1>
-              <p className="text-sm text-muted-foreground">Gerenciar emails e WhatsApp para relatórios</p>
-            </div>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-full">
       <main className="container py-6 space-y-6 pb-20">
         {/* Email Recipients Card */}
         <Card className="border border-border/50 shadow-sm animate-fade-in">

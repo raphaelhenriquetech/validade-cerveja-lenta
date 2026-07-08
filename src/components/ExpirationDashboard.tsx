@@ -20,12 +20,7 @@ function getDaysUntilExpiration(expirationDate: string): number {
 
 export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: ExpirationDashboardProps) {
   const stats = useMemo(() => {
-    let expired = 0;
-    let critical = 0;
-    let attention = 0;
-    let alert = 0;
-    let ok = 0;
-
+    let expired = 0, critical = 0, attention = 0, alert = 0, ok = 0;
     batches.forEach(batch => {
       const days = getDaysUntilExpiration(batch.expiration_date);
       if (days < 0) expired++;
@@ -34,102 +29,61 @@ export function ExpirationDashboard({ batches, onFilterChange, activeFilter }: E
       else if (days <= 30) alert++;
       else ok++;
     });
-
     return { expired, critical, attention, alert, ok, total: batches.length };
   }, [batches]);
 
   const cards = [
-    {
-      id: 'all',
-      title: 'Total',
-      subtitle: 'Todos os lotes',
-      count: stats.total,
-      icon: Package,
-      bgColor: 'bg-primary',
-      shadowColor: 'shadow-primary/20',
-      isPulse: false,
-    },
-    {
-      id: 'expired',
-      title: 'Vencidos',
-      subtitle: 'Prazo expirado',
-      count: stats.expired,
-      icon: XCircle,
-      bgColor: 'bg-red-500',
-      shadowColor: 'shadow-red-500/20',
-      isPulse: stats.expired > 0,
-    },
-    {
-      id: 'critical',
-      title: 'Crítico',
-      subtitle: 'Até 7 dias',
-      count: stats.critical,
-      icon: AlertTriangle,
-      bgColor: 'bg-orange-400',
-      shadowColor: 'shadow-orange-400/20',
-      isPulse: stats.critical > 0,
-    },
-    {
-      id: '15days',
-      title: 'Atenção',
-      subtitle: '8 a 15 dias',
-      count: stats.attention,
-      icon: AlertCircle,
-      bgColor: 'bg-amber-400',
-      shadowColor: 'shadow-amber-400/20',
-      isPulse: false,
-    },
-    {
-      id: '30days',
-      title: 'Alerta',
-      subtitle: '16 a 30 dias',
-      count: stats.alert,
-      icon: Clock,
-      bgColor: 'bg-cyan-500',
-      shadowColor: 'shadow-cyan-500/20',
-      isPulse: false,
-    },
-    {
-      id: 'ok',
-      title: 'OK',
-      subtitle: 'Mais de 30 dias',
-      count: stats.ok,
-      icon: CheckCircle,
-      bgColor: 'bg-green-500',
-      shadowColor: 'shadow-green-500/20',
-      isPulse: false,
-    },
-  ];
+    { id: 'all', title: 'Total', subtitle: 'Todos os lotes', count: stats.total, icon: Package, tone: 'primary', pulse: false },
+    { id: 'expired', title: 'Vencidos', subtitle: 'Prazo expirado', count: stats.expired, icon: XCircle, tone: 'expired', pulse: stats.expired > 0 },
+    { id: 'critical', title: 'Crítico', subtitle: 'Até 7 dias', count: stats.critical, icon: AlertTriangle, tone: 'critical', pulse: stats.critical > 0 },
+    { id: '15days', title: 'Atenção', subtitle: '8 a 15 dias', count: stats.attention, icon: AlertCircle, tone: 'attention', pulse: false },
+    { id: '30days', title: 'Alerta', subtitle: '16 a 30 dias', count: stats.alert, icon: Clock, tone: 'alert', pulse: false },
+    { id: 'ok', title: 'OK', subtitle: 'Mais de 30 dias', count: stats.ok, icon: CheckCircle, tone: 'ok', pulse: false },
+  ] as const;
+
+  const toneClasses: Record<string, { ring: string; iconBg: string; iconFg: string; countFg: string; accent: string }> = {
+    primary:   { ring: 'ring-primary/40',           iconBg: 'bg-primary/10',           iconFg: 'text-primary',           countFg: 'text-primary',           accent: 'bg-primary' },
+    expired:   { ring: 'ring-destructive/40',       iconBg: 'bg-destructive/10',       iconFg: 'text-destructive',       countFg: 'text-destructive',       accent: 'bg-destructive' },
+    critical:  { ring: 'ring-status-critical/40',   iconBg: 'bg-status-critical/10',   iconFg: 'text-status-critical',   countFg: 'text-status-critical',   accent: 'bg-status-critical' },
+    attention: { ring: 'ring-status-attention/40',  iconBg: 'bg-status-attention/10',  iconFg: 'text-status-attention',  countFg: 'text-status-attention',  accent: 'bg-status-attention' },
+    alert:     { ring: 'ring-accent/50',            iconBg: 'bg-accent/15',            iconFg: 'text-accent',            countFg: 'text-accent',            accent: 'bg-accent' },
+    ok:        { ring: 'ring-status-ok/40',         iconBg: 'bg-status-ok/10',         iconFg: 'text-status-ok',         countFg: 'text-status-ok',         accent: 'bg-status-ok' },
+  };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon;
         const isActive = activeFilter === card.id;
-        
+        const t = toneClasses[card.tone];
         return (
-          <div
+          <button
             key={card.id}
+            type="button"
             className={cn(
-              'cursor-pointer transition-all duration-200 rounded-xl p-4 md:p-5 flex flex-col justify-between min-h-[140px] shadow-lg',
-              card.bgColor,
-              card.shadowColor,
-              isActive && 'ring-4 ring-white/30 scale-[1.02]',
-              card.isPulse && 'animate-pulse',
-              'hover:scale-[1.02] hover:shadow-xl'
+              'group relative overflow-hidden text-left rounded-2xl border border-border bg-card p-4 md:p-5',
+              'transition-all duration-200 shadow-sm hover:shadow-emerald hover:-translate-y-0.5',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+              isActive && `ring-2 ${t.ring} -translate-y-0.5 shadow-emerald`,
+              card.pulse && 'pulse-glow'
             )}
-            style={{ animationDelay: `${index * 50}ms` }}
+            style={{ animationDelay: `${index * 40}ms` }}
             onClick={() => onFilterChange(isActive ? 'all' : card.id)}
           >
-            <div className="flex justify-end">
-              <Icon className="h-8 w-8 md:h-10 md:w-10 text-white/50" />
+            <span className={cn('absolute inset-x-0 top-0 h-1', t.accent)} />
+            <div className="flex items-start justify-between gap-2">
+              <div className={cn('p-2 rounded-xl', t.iconBg)}>
+                <Icon className={cn('h-5 w-5', t.iconFg)} />
+              </div>
+              <span className={cn('font-heading text-3xl md:text-4xl font-bold leading-none tabular-nums', t.countFg)}>
+                {card.count}
+              </span>
             </div>
-            <div className="text-white">
-              <p className="text-3xl md:text-4xl font-bold">{card.count}</p>
-              <p className="font-semibold text-sm md:text-base">{card.title}</p>
-              <p className="text-xs md:text-sm text-white/80">{card.subtitle}</p>
+            <div className="mt-4">
+              <p className="text-sm font-semibold text-foreground">{card.title}</p>
+              <p className="text-xs text-muted-foreground">{card.subtitle}</p>
             </div>
-          </div>
+          </button>
         );
       })}
     </div>
