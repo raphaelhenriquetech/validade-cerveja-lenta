@@ -428,6 +428,7 @@ export function BeerList({
                                     setEditBeerName(batch.beer_name);
                                     setEditExpirationDate(batch.expiration_date);
                                     setEditSku(batch.sku || '');
+                                    setEditLot(batch.lot);
                                   }}
                                 >
                                   <Pencil className="h-4 w-4" />
@@ -756,6 +757,7 @@ export function BeerList({
                                     setEditBeerName(batch.beer_name);
                                     setEditExpirationDate(batch.expiration_date);
                                     setEditSku(batch.sku || '');
+                                    setEditLot(batch.lot);
                                   }}
                                 >
                                   <Pencil className="h-5 w-5" />
@@ -984,6 +986,15 @@ export function BeerList({
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="edit_lot">Código do Lote</Label>
+              <Input
+                id="edit_lot"
+                value={editLot}
+                onChange={(e) => setEditLot(e.target.value)}
+                placeholder="Ex: L2024-001"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="quantity">Quantidade</Label>
               <Input
                 id="quantity"
@@ -1010,6 +1021,15 @@ export function BeerList({
             <Button
               onClick={() => {
                 if (editingBatch) {
+                  const trimmedLot = editLot.trim();
+                  if (!trimmedLot) {
+                    toast({
+                      title: 'Código do lote obrigatório',
+                      description: 'Informe um código de lote válido.',
+                      variant: 'destructive',
+                    });
+                    return;
+                  }
                   const updates: Partial<BeerBatch> = {};
                   if (editQuantity && parseInt(editQuantity) !== editingBatch.quantity) {
                     updates.quantity = parseInt(editQuantity);
@@ -1022,6 +1042,9 @@ export function BeerList({
                   }
                   if (editSku !== (editingBatch.sku || '')) {
                     updates.sku = editSku || null;
+                  }
+                  if (trimmedLot !== editingBatch.lot) {
+                    updates.lot = trimmedLot;
                   }
                   if (Object.keys(updates).length > 0) {
                     onUpdateBatch(editingBatch.id, updates, editingBatch);
