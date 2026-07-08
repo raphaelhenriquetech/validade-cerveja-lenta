@@ -670,10 +670,12 @@ export function BeerList({
                         {index === 0 ? (
                           <TableCell rowSpan={beerBatches.length} className="p-4 pl-6 text-sm text-gray-900 dark:text-white font-medium align-top">
                             <div className="flex items-center gap-3">
-                              <span className={cn(
-                                "w-2 h-2 rounded-full flex-shrink-0",
-                                isArchivedView ? "bg-gray-400" : "bg-primary"
-                              )}></span>
+                              <BeerBatchThumb
+                                imageUrl={getImageForBatch(beerBatches[0]).image_url}
+                                loading={getImageForBatch(beerBatches[0]).loading}
+                                alt={beerName}
+                                size="md"
+                              />
                               <span>{beerName}</span>
                               {beerBatches.length > 1 && (
                                 <Badge variant="secondary" className="text-xs">
