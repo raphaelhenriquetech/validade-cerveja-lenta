@@ -34,6 +34,8 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTinyImages } from '@/hooks/useTinyImages';
+import { BeerBatchThumb } from '@/components/BeerBatchThumb';
 
 interface BeerListProps {
   batches: BeerBatch[];
@@ -73,6 +75,20 @@ export function BeerList({
   const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  // Fetch Tiny product images by SKU (cached in tiny_product_cache)
+  const skusForImages = useMemo(
+    () => Array.from(new Set(batches.map((b) => b.sku?.trim()).filter((s): s is string => !!s))),
+    [batches],
+  );
+  const { images: tinyImages, refetchImage } = useTinyImages(skusForImages);
+
+  const getImageForBatch = (batch: BeerBatch) => {
+    const sku = batch.sku?.trim();
+    if (!sku) return { image_url: null, loading: false };
+    const entry = tinyImages[sku];
+    return { image_url: entry?.image_url ?? null, loading: entry?.loading ?? true };
+  };
 
   // First filter by search term
   const searchFilteredBatches = useMemo(() => {
