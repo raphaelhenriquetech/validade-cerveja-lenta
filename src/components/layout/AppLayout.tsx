@@ -1,6 +1,8 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Home, Package, Settings as SettingsIcon, LogOut, Menu, X } from "lucide-react";
-import stockbrewLogo from "@/assets/stockbrew-logo.png";
+import stockbrewLogoLight from "@/assets/stockbrew-logo-light.png";
+import stockbrewLogoDark from "@/assets/stockbrew-logo-dark.png";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +29,8 @@ export default function AppLayout() {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const logoSrc = resolvedTheme === "dark" ? stockbrewLogoDark : stockbrewLogoLight;
 
   const handleLogout = async () => {
     const { error } = await signOut();
@@ -40,11 +44,11 @@ export default function AppLayout() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="max-w-screen-2xl mx-auto flex items-center gap-4 px-4 md:px-6 h-16">
           {/* Brand */}
-          <NavLink to="/" className="flex items-center gap-2 shrink-0 group">
+          <NavLink to="/" className="flex items-center shrink-0 group" aria-label="Stock Brew">
             <img
-              src={stockbrewLogo}
+              src={logoSrc}
               alt="Stock Brew"
-              className="h-10 md:h-11 w-auto transition-transform group-hover:scale-[1.03]"
+              className="h-9 md:h-10 w-auto transition-transform group-hover:scale-[1.03]"
             />
           </NavLink>
 
