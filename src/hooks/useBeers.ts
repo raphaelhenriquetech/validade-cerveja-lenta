@@ -286,13 +286,16 @@ export function useBeers() {
         if (updates.sku !== undefined && updates.sku !== oldBatch.sku) {
           changes.push(`SKU: ${oldBatch.sku || '(vazio)'} → ${updates.sku || '(vazio)'}`);
         }
+        if (updates.lot !== undefined && updates.lot !== oldBatch.lot) {
+          changes.push(`lote: ${oldBatch.lot} → ${updates.lot}`);
+        }
 
         await logActivity(
           'batch_updated',
           'beer_batch',
           batchId,
           `Lote ${oldBatch.lot} atualizado: ${changes.join(', ')}`,
-          { quantity: oldBatch.quantity, beer_name: oldBatch.beer_name, expiration_date: oldBatch.expiration_date, sku: oldBatch.sku },
+          { quantity: oldBatch.quantity, beer_name: oldBatch.beer_name, expiration_date: oldBatch.expiration_date, sku: oldBatch.sku, lot: oldBatch.lot },
           updates
         );
       }
