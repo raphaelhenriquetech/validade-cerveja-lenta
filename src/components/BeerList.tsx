@@ -350,13 +350,15 @@ export function BeerList({
                       : "border-border"
                   )}
                 >
-                  {/* Header: Nome da cerveja + Badge de status */}
+                  {/* Header: Foto + Nome da cerveja + Badge de status */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className={cn(
-                        "w-2 h-2 rounded-full flex-shrink-0",
-                        isArchivedView ? "bg-muted-foreground" : "bg-primary"
-                      )} />
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <BeerBatchThumb
+                        imageUrl={getImageForBatch(batch).image_url}
+                        loading={getImageForBatch(batch).loading}
+                        alt={batch.beer_name}
+                        size="md"
+                      />
                       <span className="font-medium text-foreground truncate">{batch.beer_name}</span>
                     </div>
                     {!isArchivedView && <ExpirationBadge expirationDate={batch.expiration_date} />}
