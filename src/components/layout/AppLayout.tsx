@@ -1,5 +1,8 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Home, Package, Settings as SettingsIcon, LogOut, Beer, Menu, X } from "lucide-react";
+import { Home, Package, Settings as SettingsIcon, LogOut, Menu, X } from "lucide-react";
+import stockbrewLogoLight from "@/assets/stockbrew-logo-light.png";
+import stockbrewLogoDark from "@/assets/stockbrew-logo-dark.png";
+import { useTheme } from "next-themes";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +29,8 @@ export default function AppLayout() {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const logoSrc = resolvedTheme === "dark" ? stockbrewLogoDark : stockbrewLogoLight;
 
   const handleLogout = async () => {
     const { error } = await signOut();
@@ -39,16 +44,12 @@ export default function AppLayout() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="max-w-screen-2xl mx-auto flex items-center gap-4 px-4 md:px-6 h-16">
           {/* Brand */}
-          <NavLink to="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-emerald">
-              <Beer className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="font-heading text-base font-bold text-foreground">Stock Brew</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                Cerveja Lenta Tech
-              </span>
-            </div>
+          <NavLink to="/" className="flex items-center shrink-0 group" aria-label="Stock Brew">
+            <img
+              src={logoSrc}
+              alt="Stock Brew"
+              className="h-9 md:h-10 w-auto transition-transform group-hover:scale-[1.03]"
+            />
           </NavLink>
 
           {/* Desktop nav */}
@@ -63,7 +64,7 @@ export default function AppLayout() {
                   className={cn(
                     "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-brand-purple/10 text-brand-purple"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
@@ -81,7 +82,7 @@ export default function AppLayout() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <div className="h-7 w-7 rounded-full bg-gradient-gold flex items-center justify-center text-[11px] font-bold text-accent-foreground">
+                  <div className="h-7 w-7 rounded-full bg-brand-purple flex items-center justify-center text-[11px] font-bold text-brand-purple-foreground shadow-sm">
                     {user?.email?.[0]?.toUpperCase() ?? "U"}
                   </div>
                 </Button>
@@ -121,7 +122,7 @@ export default function AppLayout() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                       active
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-brand-purple/10 text-brand-purple"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >

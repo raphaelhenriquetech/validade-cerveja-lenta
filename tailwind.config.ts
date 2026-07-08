@@ -53,6 +53,11 @@ export default {
           alert: 'hsl(var(--status-alert))',
           ok: 'hsl(var(--status-ok))',
         },
+        brand: {
+          purple: 'hsl(var(--brand-purple))',
+          'purple-foreground': 'hsl(var(--brand-purple-foreground))',
+          'purple-soft': 'hsl(var(--brand-purple-soft))',
+        },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
