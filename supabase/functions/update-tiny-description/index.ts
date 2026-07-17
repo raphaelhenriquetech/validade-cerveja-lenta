@@ -81,25 +81,50 @@ serve(async (req) => {
 
     const newDesc = (cleaned ? cleaned + '\n' : '') + `Validade: ${validadeBR}`;
 
-    // Step 3: update product - Tiny requires sequencia + mandatory fields
+    // Step 3: update product
+    // WARNING: produto.alterar.php is DESTRUCTIVE — any field NOT sent gets wiped
+    // (GTIN/EAN, NCM, dimensions, brand, category, etc.). We MUST spread the
+    // entire produto object returned by produto.obter.php and only override
+    // descricao_complementar. Never send a partial payload here.
+
+    // Safeguard: block the update if the fetched product has no GTIN or NCM,
+    // to avoid propagating a Tiny-side data loss or overwriting with empties.
+    const originalGtin = (produto.gtin ?? '').toString().trim();
+    const originalNcm = (produto.ncm ?? '').toString().trim();
+    if (!originalGtin || !originalNcm) {
+      throw new Error(
+        `Anúncio sem GTIN/NCM no Tiny (gtin="${originalGtin}", ncm="${originalNcm}") — atualização bloqueada para evitar perda de dados. Corrija o cadastro no Tiny e tente novamente.`
+      );
+    }
+
+    // Strip read-only / server-computed fields that Tiny returns but does not
+    // accept back on alterar (or that would be nonsensical to resend).
+    const {
+      data_criacao,
+      data_alteracao,
+      preco_custo_medio,
+      ...produtoWritable
+    } = produto as Record<string, unknown>;
+
     const produtoPayload = {
       produtos: [
         {
           produto: {
+            ...produtoWritable,
             sequencia: 1,
             id: idProduto,
-            codigo: produto.codigo,
-            nome: produto.nome,
-            unidade: produto.unidade || 'UN',
-            preco: produto.preco ?? 0,
-            origem: produto.origem ?? '0',
-            situacao: produto.situacao || 'A',
-            tipo: produto.tipo || 'P',
             descricao_complementar: newDesc,
           },
         },
       ],
     };
+
+    console.log(
+      '[update-tiny-description] payload keys:',
+      Object.keys(produtoPayload.produtos[0].produto).join(','),
+      `gtin=${originalGtin} ncm=${originalNcm}`
+    );
+
 
     const body = `token=${encodeURIComponent(TINY_API_TOKEN)}&produto=${encodeURIComponent(
       JSON.stringify(produtoPayload)
