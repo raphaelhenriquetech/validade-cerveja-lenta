@@ -1,94 +1,40 @@
-# Miniatura do produto na listagem via Tiny
 
-## Objetivo
+## Problema
 
-Ao lado do nome de cada lote, exibir uma **miniatura da foto principal do produto** buscada do Tiny pelo SKU. Pequena (~40x40), nítida, com fallback quando o SKU não tem imagem cadastrada.
+Ao atualizar a validade via `update-tiny-description`, a função chama `produto.alterar.php` reenviando **apenas alguns campos** (id, codigo, nome, unidade, preco, origem, situacao, tipo, descricao_complementar). A API do Tiny trata `produto.alterar.php` como **substituição do anúncio**: campos não enviados (GTIN/EAN, NCM, peso, dimensões, marca, categoria, fornecedor, descrição principal, etc.) são apagados / zerados.
 
-## Como vai funcionar
+Resultado: SKUs que receberam envio de validade perderam EAN e NCM.
 
-```text
-Card do lote  ┌────────────────────────────────────────┐
-              │ [🖼️ 40x40]  IPA Session 350ml          │
-              │  nítida     Lote L2508 • 24 un         │
-              │  arred.     Val. 12/08/2026            │
-              └────────────────────────────────────────┘
-```
+## Correção (prioridade alta)
 
-Fluxo de dados:
+Refazer o payload de `supabase/functions/update-tiny-description/index.ts` para **preservar 100% do anúncio** e mudar somente `descricao_complementar`:
 
-```text
-BeerList renderiza
-      │
-      ▼
-Para cada SKU único da lista:
-   consulta cache local (tabela tiny_product_cache)
-      │
-      ├─ Tem e fresco (< 7 dias) ──► usa image_url direto
-      │
-      └─ Não tem OU expirou
-             │
-             ▼
-       invoca edge function get-tiny-product-image({ sku })
-             │
-             ├─ produtos.pesquisa.php?pesquisa=SKU  → id
-             ├─ produto.obter.php?id=X              → anexos[0].anexo
-             │
-             ▼
-       upsert em tiny_product_cache (sku, image_url, fetched_at)
-             │
-             ▼
-       retorna URL, front atualiza o card
-```
+1. Após `produto.obter.php`, capturar o objeto `produto` completo retornado.
+2. Montar o payload de alteração fazendo **spread do produto original inteiro** e sobrescrever apenas `descricao_complementar` (mantendo `id` e `sequencia: 1`).
+3. Remover campos que o Tiny devolve mas não aceita em alterar (ex.: `data_criacao`, `preco_custo_medio`, blocos read-only). Manter EAN (`gtin`), `gtin_embalagem`, `ncm`, `origem`, `peso_liquido`, `peso_bruto`, `altura`, `largura`, `comprimento`, `marca`, `categoria`, `unidade_por_caixa`, `descricao_complementar` limpo/atualizado, `anexos`, `variacoes`, `fornecedores`, etc., exatamente como vieram.
+4. Logar o payload final (mascarando token) para auditoria antes do redeploy.
+5. Testar em 1 SKU não crítico antes de liberar em massa: enviar validade, depois consultar `produto.obter.php` e conferir que `gtin` e `ncm` continuam iguais.
+
+### Salvaguarda adicional
+
+- Antes de chamar `produto.alterar.php`, validar que `produto.gtin` e `produto.ncm` estão presentes no objeto que será enviado. Se qualquer um estiver vazio no retorno do `obter`, **abortar** com erro claro ("Anúncio sem GTIN/NCM — atualização bloqueada para evitar perda de dados") em vez de enviar.
+- Comentário no código deixando explícito que `produto.alterar.php` é destrutivo e nunca deve ser chamado com payload parcial.
+
+## Segundo ponto — recuperar EAN/NCM já apagados
+
+Resposta direta: **a API do Tiny não tem endpoint público de histórico/rollback de anúncio**. Uma vez que `produto.alterar.php` sobrescreveu o registro, o valor anterior não é exposto via API.
+
+Opções reais para recuperar:
+
+1. **Interface web do Tiny** — em alguns planos existe "Histórico de alterações" na tela do produto (aba de auditoria). Se o seu plano tiver, dá para ver o valor anterior de GTIN/NCM manualmente por SKU e recadastrar. Vale abrir 1 produto afetado e conferir se essa aba aparece.
+2. **Suporte Tiny/Olist** — abrir chamado pedindo restauração dos campos a partir de backup interno deles. Já aconteceu de restaurarem, mas depende de janela de retenção.
+3. **Fontes externas** — se você tem planilha de cadastro, export anterior, XML de nota de entrada, catálogo do fornecedor, ou o EAN impresso na embalagem, dá para repopular. Posso montar um utilitário no Stock Brew que, dado um CSV `sku,gtin,ncm`, chama `produto.alterar.php` **preservando o restante** e regrava esses dois campos em lote.
+
+Recomendo: (a) corrigir a função agora para parar o sangramento; (b) listar quais SKUs receberam envio de validade após a data em que a função entrou em produção (temos `tiny_description_updated_at` no banco) para saber exatamente o universo afetado; (c) decidir entre suporte Tiny e reimport via CSV.
 
 ## Detalhes técnicos
 
-### Backend
-
-**Nova tabela `tiny_product_cache`** (uma linha por SKU — evita re-baixar por lote):
-- `sku` (PK), `image_url` (texto), `product_name`, `tiny_product_id`, `fetched_at`, `not_found` (bool, para não ficar retentando SKUs sem imagem).
-- RLS: leitura para `authenticated`, escrita apenas `service_role` (a edge function faz o upsert).
-
-**Nova edge function `get-tiny-product-image`**:
-- Aceita `{ skus: string[] }` (batch — busca várias miniaturas de uma vez, uma requisição do frontend por render).
-- Para cada SKU: chama `produtos.pesquisa.php?pesquisa=SKU`, pega `id` do primeiro match, chama `produto.obter.php?id=…`, extrai `anexos[0].anexo` (URL da imagem principal).
-- Usa **exponential backoff** para o erro `6` (rate limit) do Tiny, mesmo padrão de `compare-tiny-stock`.
-- Upsert no cache, inclusive `not_found = true` quando o SKU não retorna anexos.
-- Retorna `{ [sku]: { image_url, product_name } | null }`.
-
-### Frontend
-
-**Novo hook `useTinyImages(skus: string[])`**:
-- Lê `tiny_product_cache` no primeiro render, devolve `Record<sku, imageUrl>`.
-- Para SKUs faltantes ou com cache > 7 dias, chama `get-tiny-product-image` uma vez (dedup por render), atualiza estado.
-- Expõe `refetchImage(sku)` para o botão "Atualizar imagem".
-
-**`BeerList.tsx` (desktop + mobile)**:
-- Nova coluna/elemento à esquerda do nome: `<img>` 40x40, `rounded-lg object-cover`, `loading="lazy"`, `decoding="async"`.
-- Fallback: quando `image_url` é `null`, mostra ícone de cerveja emerald sobre um quadrado `bg-muted` do mesmo tamanho (mantém alinhamento).
-- Skeleton pulsante enquanto `useTinyImages` está carregando.
-- Botão "Atualizar imagem" dentro do menu de ações do lote (dispara `refetchImage`).
-
-**Nitidez sem peso**:
-- O Tiny devolve URLs grandes; usamos `<img>` direto com `width={40} height={40}` — o navegador redimensiona sem baixar cópia menor, mas para 40px a foto fica bem nítida em telas retina.
-- `object-cover` centraliza. Sem processamento no servidor — mantém o design leve.
-
-## Arquivos
-
-**Migração**
-- Cria `public.tiny_product_cache` com GRANT + RLS conforme padrão.
-
-**Backend**
-- `supabase/functions/get-tiny-product-image/index.ts` (novo).
-
-**Frontend**
-- `src/hooks/useTinyImages.ts` (novo).
-- `src/components/BeerList.tsx`: thumbnail + skeleton + item de menu "Atualizar imagem".
-- `src/components/BeerBatchThumb.tsx` (pequeno componente reutilizável para thumbnail + fallback).
-
-## Validação
-
-1. Abrir a Home com lotes que têm SKU → miniaturas aparecem em <2s (primeira vez) e instantâneas nas próximas visitas (cache).
-2. SKU sem imagem no Tiny → mostra o fallback com ícone, sem quebrar.
-3. Menu do lote → "Atualizar imagem" → força novo fetch e a imagem é substituída.
-4. Rate limit do Tiny → função retenta com backoff, sem erro na UI.
-5. Mobile (cards) → miniatura no canto superior esquerdo do card, mantém legibilidade do texto.
+- Arquivo único alterado: `supabase/functions/update-tiny-description/index.ts`.
+- Nenhuma mudança de schema, front-end ou outras funções.
+- Deploy da função após alteração; teste com 1 SKU de controle antes de liberar uso normal.
+- Posso, em seguida, gerar uma query listando os SKUs afetados (via `beer_batches.tiny_description_updated_at is not null`) para você cruzar com o Tiny e dimensionar o estrago.
