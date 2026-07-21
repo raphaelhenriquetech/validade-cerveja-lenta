@@ -292,10 +292,6 @@ export function BeerList({
           </div>
         </div>
         
-        {/* Search field and Compare button */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
         {/* Search field and filters */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="relative w-full sm:w-80">
@@ -330,13 +326,16 @@ export function BeerList({
                 <option value="not_sent">Validade pendente</option>
               </select>
               {validadeFilter !== 'all' && (
-                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 bg-primary/10 dark:bg-primary/20 text-primary rounded-full px-3 py-1">
+                <span className="text-xs sm:text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary rounded-full px-3 py-1">
                   {filteredBatches.length} encontrado{filteredBatches.length === 1 ? '' : 's'}
                 </span>
               )}
             </div>
           )}
         </div>
+      </div>
+
+      {sortedBatches.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="p-4 rounded-full bg-gray-100 dark:bg-zinc-800 mb-4">
             {searchTerm ? (
