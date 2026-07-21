@@ -73,6 +73,7 @@ export function BeerList({
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
   const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
   const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
+  const [validadeFilter, setValidadeFilter] = useState<'all' | 'sent' | 'not_sent'>('all');
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -103,26 +104,34 @@ export function BeerList({
 
   // Then filter by status (only for active view)
   const filteredBatches = useMemo(() => {
-    if (isArchivedView) return searchFilteredBatches;
-    
-    return searchFilteredBatches.filter(batch => {
-      const days = getDaysUntilExpiration(batch.expiration_date);
-      switch (filter) {
-        case 'expired':
-          return days < 0;
-        case 'critical':
-          return days >= 0 && days <= 7;
-        case '15days':
-          return days >= 8 && days <= 15;
-        case '30days':
-          return days >= 16 && days <= 30;
-        case 'ok':
-          return days > 30;
-        default:
-          return true;
-      }
-    });
-  }, [searchFilteredBatches, filter, isArchivedView]);
+    const base = isArchivedView
+      ? searchFilteredBatches
+      : searchFilteredBatches.filter(batch => {
+          const days = getDaysUntilExpiration(batch.expiration_date);
+          switch (filter) {
+            case 'expired':
+              return days < 0;
+            case 'critical':
+              return days >= 0 && days <= 7;
+            case '15days':
+              return days >= 8 && days <= 15;
+            case '30days':
+              return days >= 16 && days <= 30;
+            case 'ok':
+              return days > 30;
+            default:
+              return true;
+          }
+        });
+
+    if (validadeFilter === 'sent') {
+      return base.filter(b => !!b.tiny_description_updated_at || descUpdatedBatches.has(b.id));
+    }
+    if (validadeFilter === 'not_sent') {
+      return base.filter(b => !b.tiny_description_updated_at && !descUpdatedBatches.has(b.id));
+    }
+    return base;
+  }, [searchFilteredBatches, filter, isArchivedView, validadeFilter, descUpdatedBatches]);
 
   const sortedBatches = useMemo(() => {
     if (isArchivedView) {
@@ -283,7 +292,7 @@ export function BeerList({
           </div>
         </div>
         
-        {/* Search field and Compare button */}
+        {/* Search field and filters */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="relative w-full sm:w-80">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
@@ -303,6 +312,26 @@ export function BeerList({
               </button>
             )}
           </div>
+
+          {!isArchivedView && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                value={validadeFilter}
+                onChange={(e) => setValidadeFilter(e.target.value as 'all' | 'sent' | 'not_sent')}
+                className="bg-gray-100 dark:bg-zinc-800 border-transparent focus:ring-primary focus:border-primary rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white"
+                aria-label="Filtrar por validade enviada"
+              >
+                <option value="all">Validade: Todos</option>
+                <option value="sent">✓ Validade enviada</option>
+                <option value="not_sent">Validade pendente</option>
+              </select>
+              {validadeFilter !== 'all' && (
+                <span className="text-xs sm:text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary rounded-full px-3 py-1">
+                  {filteredBatches.length} encontrado{filteredBatches.length === 1 ? '' : 's'}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
