@@ -1,28 +1,32 @@
-# Filtro "Validade enviada ao Tiny"
-
 ## Objetivo
-Permitir filtrar a listagem para exibir apenas lotes cujo SKU já teve a validade enviada para a descrição no Tiny (campo `tiny_description_updated_at` preenchido), com contador de resultados. Apenas filtro de exibição — nenhuma outra lógica é alterada.
+Suspender temporariamente **apenas** o botão de envio de validade para o Tiny ERP (ícone `CalendarClock`), sem tocar em nada da API, edge functions, sincronização de estoque ou qualquer outro recurso.
 
-## Mudanças
+## Escopo (o que muda)
+Somente `src/components/BeerList.tsx` — o botão "Enviar validade" nas views desktop e mobile.
 
-### `src/components/BeerList.tsx` (único arquivo alterado)
-1. Adicionar novo estado local `validadeFilter: 'all' | 'sent' | 'not_sent'` (default `'all'`).
-2. Adicionar um controle de filtro ao lado dos filtros/busca existentes (Select ou grupo de botões):
-   - "Todos"
-   - "Validade enviada" (com ícone OK verde)
-   - "Validade pendente"
-3. Aplicar o filtro na lista já filtrada por busca/expiração:
-   - `sent`: manter apenas lotes com `batch.tiny_description_updated_at` truthy.
-   - `not_sent`: manter apenas lotes com `tiny_description_updated_at` nulo/vazio.
-   - `all`: sem alteração.
-4. Exibir contador ao lado do filtro: `X resultado(s) encontrado(s)` refletindo o total após todos os filtros aplicados (desktop e mobile).
-5. Manter o filtro escondido/compacto em mobile via classe responsiva, mas funcional em ambos.
+## Comportamento novo
+- O botão continua **visível** na lista (desktop e mobile), mas:
+  - Fica com aparência desabilitada (opacidade reduzida / cursor bloqueado).
+  - Ao clicar, **não chama** `onUpdateTinyDescription` nem qualquer função da API.
+  - Abre um `AlertDialog` (popup) com a mensagem:
+    > **Recurso temporariamente suspenso**
+    > O envio de validade para o Tiny ERP está suspenso e em análise pela equipe técnica da Cerveja Lenta Tech para uma nova atualização.
+    > Agradecemos a compreensão.
+  - Botão único de "Entendi" para fechar.
+- Tooltip do ícone passa a mostrar "Recurso suspenso — em análise".
+- Selo verde de "OK" (histórico de envios já feitos) **permanece visível** para os lotes que já têm `tiny_description_updated_at`, apenas como registro histórico.
 
-## Não altera
-- Hooks (`useBeers.ts`), edge functions, schema do banco, sync com Tiny, envio de validade, badge "OK" nos ícones, nenhuma outra tela.
-- Comportamento de qualquer outro filtro existente.
+## O que NÃO muda
+- Nenhuma alteração em edge functions (`update-tiny-description`, `sync-tiny-stock`, etc.).
+- Nenhuma alteração em `useBeers.ts` — a função `updateTinyDescription` continua existindo, apenas não é mais chamada por esse botão.
+- Sincronização de estoque com Tiny (add/edit/archive) continua funcionando normalmente.
+- Comparativo de estoque, imagens do Tiny, PDF, WhatsApp e demais recursos: intactos.
 
-## Validação
-- Selecionar "Validade enviada" → lista mostra apenas linhas com badge verde "OK".
-- Selecionar "Validade pendente" → lista mostra apenas linhas sem o badge.
-- Contador atualiza dinamicamente ao combinar com busca por nome/SKU e filtros de expiração.
+## Como reativar no futuro
+Basta remover o handler que abre o popup e restaurar o `onClick` original — 1 linha em cada view. Sem migrações, sem redeploy de edge function.
+
+## Detalhes técnicos
+- Adicionar estado local `suspendedDialogOpen` em `BeerList.tsx`.
+- Substituir `onClick` dos dois botões `CalendarClock` (desktop + mobile) por `() => setSuspendedDialogOpen(true)`.
+- Adicionar `disabled` visual (`opacity-60 cursor-not-allowed`) — mas sem `disabled` real, para o clique ainda disparar o popup.
+- Renderizar um único `<AlertDialog>` no final do componente com a mensagem acima.
