@@ -104,26 +104,34 @@ export function BeerList({
 
   // Then filter by status (only for active view)
   const filteredBatches = useMemo(() => {
-    if (isArchivedView) return searchFilteredBatches;
-    
-    return searchFilteredBatches.filter(batch => {
-      const days = getDaysUntilExpiration(batch.expiration_date);
-      switch (filter) {
-        case 'expired':
-          return days < 0;
-        case 'critical':
-          return days >= 0 && days <= 7;
-        case '15days':
-          return days >= 8 && days <= 15;
-        case '30days':
-          return days >= 16 && days <= 30;
-        case 'ok':
-          return days > 30;
-        default:
-          return true;
-      }
-    });
-  }, [searchFilteredBatches, filter, isArchivedView]);
+    const base = isArchivedView
+      ? searchFilteredBatches
+      : searchFilteredBatches.filter(batch => {
+          const days = getDaysUntilExpiration(batch.expiration_date);
+          switch (filter) {
+            case 'expired':
+              return days < 0;
+            case 'critical':
+              return days >= 0 && days <= 7;
+            case '15days':
+              return days >= 8 && days <= 15;
+            case '30days':
+              return days >= 16 && days <= 30;
+            case 'ok':
+              return days > 30;
+            default:
+              return true;
+          }
+        });
+
+    if (validadeFilter === 'sent') {
+      return base.filter(b => !!b.tiny_description_updated_at || descUpdatedBatches.has(b.id));
+    }
+    if (validadeFilter === 'not_sent') {
+      return base.filter(b => !b.tiny_description_updated_at && !descUpdatedBatches.has(b.id));
+    }
+    return base;
+  }, [searchFilteredBatches, filter, isArchivedView, validadeFilter, descUpdatedBatches]);
 
   const sortedBatches = useMemo(() => {
     if (isArchivedView) {
