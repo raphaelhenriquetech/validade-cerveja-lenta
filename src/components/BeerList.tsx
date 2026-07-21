@@ -74,6 +74,7 @@ export function BeerList({
   const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
   const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
   const [validadeFilter, setValidadeFilter] = useState<'all' | 'sent' | 'not_sent'>('all');
+  const [suspendedDialogOpen, setSuspendedDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
