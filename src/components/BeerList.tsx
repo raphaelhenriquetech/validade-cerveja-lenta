@@ -876,20 +876,10 @@ export function BeerList({
                                       <TooltipTrigger asChild>
                                         <div className="relative inline-flex">
                                           <button
-                                            className={cn(
-                                              "transition-colors",
-                                              batch.sku && !updatingDescBatches.has(batch.id)
-                                                ? "text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300"
-                                                : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                                            )}
-                                            onClick={() => handleUpdateDescription(batch)}
-                                            disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                            className="transition-colors text-purple-500 dark:text-purple-400 opacity-60 cursor-not-allowed"
+                                            onClick={() => setSuspendedDialogOpen(true)}
                                           >
-                                            {updatingDescBatches.has(batch.id) ? (
-                                              <Loader2 className="h-5 w-5 animate-spin" />
-                                            ) : (
-                                              <CalendarClock className="h-5 w-5" />
-                                            )}
+                                            <CalendarClock className="h-5 w-5" />
                                           </button>
                                           {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
                                             <span
@@ -902,11 +892,7 @@ export function BeerList({
                                         </div>
                                       </TooltipTrigger>
                                       <TooltipContent>
-                                        {batch.sku
-                                          ? updatingDescBatches.has(batch.id)
-                                            ? 'Atualizando descrição...'
-                                            : 'Enviar validade para descrição no Tiny'
-                                          : 'Adicione um SKU'}
+                                        Recurso suspenso — em análise
                                       </TooltipContent>
                                     </Tooltip>
                                   </TooltipProvider>
