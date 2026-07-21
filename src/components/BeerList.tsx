@@ -530,15 +530,10 @@ export function BeerList({
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                                      onClick={() => handleUpdateDescription(batch)}
-                                      disabled={!batch.sku || updatingDescBatches.has(batch.id)}
+                                      className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 opacity-60"
+                                      onClick={() => setSuspendedDialogOpen(true)}
                                     >
-                                      {updatingDescBatches.has(batch.id) ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                      ) : (
-                                        <CalendarClock className="h-4 w-4" />
-                                      )}
+                                      <CalendarClock className="h-4 w-4" />
                                     </Button>
                                     {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
                                       <span
@@ -551,7 +546,7 @@ export function BeerList({
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  {batch.sku ? 'Enviar validade para descrição no Tiny' : 'Adicione um SKU'}
+                                  Recurso suspenso — em análise
                                 </TooltipContent>
                               </Tooltip>
                             )}
