@@ -29,3 +29,7 @@ verify_jwt = false
 
 [functions.update-tiny-description]
 verify_jwt = false
+
+[functions.vencimentos]
+verify_jwt = false
+
