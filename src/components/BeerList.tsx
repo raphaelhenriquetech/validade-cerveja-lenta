@@ -336,7 +336,6 @@ export function BeerList({
             {sortedBatches.map((batch) => {
               const days = getDaysUntilExpiration(batch.expiration_date);
               const isUrgent = days <= 7 && !isArchivedView;
-              const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
               
               return (
                 <div 
@@ -605,7 +604,6 @@ export function BeerList({
                   beerBatches.map((batch, index) => {
                     const days = getDaysUntilExpiration(batch.expiration_date);
                     const isUrgent = days <= 7 && !isArchivedView;
-                    const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
                     
                     return (
                       <TableRow 
