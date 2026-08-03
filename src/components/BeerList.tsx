@@ -812,27 +812,14 @@ export function BeerList({
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <button 
-                                        className={cn(
-                                          "transition-colors",
-                                          batch.sku 
-                                            ? "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" 
-                                            : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                                        )}
-                                        onClick={() => handleSyncToTiny(batch)}
-                                        disabled={!batch.sku || isSyncing}
+                                        className="transition-colors text-gray-400 dark:text-gray-500 opacity-60 cursor-not-allowed"
+                                        onClick={() => setStockSuspendedDialogOpen(true)}
                                       >
-                                        <RefreshCw className={cn(
-                                          "h-5 w-5",
-                                          isSyncing && "animate-spin"
-                                        )} />
+                                        <RefreshCw className="h-5 w-5" />
                                       </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      {batch.sku 
-                                        ? isSyncing 
-                                          ? 'Sincronizando...' 
-                                          : 'Sincronizar estoque com Tiny'
-                                        : 'Adicione um SKU para sincronizar'}
+                                      Recurso suspenso — em análise
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
