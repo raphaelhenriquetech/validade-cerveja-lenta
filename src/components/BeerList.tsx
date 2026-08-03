@@ -174,30 +174,7 @@ export function BeerList({
     return stockMap;
   }, [batches]);
 
-  // SUSPENSO: envio de estoque para o Tiny ERP desativado temporariamente
-  const handleSyncToTiny = async (_batch: BeerBatch) => {
-    setStockSuspendedDialogOpen(true);
-  };
 
-  const handleUpdateDescription = async (batch: BeerBatch) => {
-    if (!onUpdateTinyDescription || !batch.sku) return;
-    setUpdatingDescBatches(prev => new Set(prev).add(batch.id));
-    try {
-      const success = await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
-        beer_name: batch.beer_name,
-        lot: batch.lot,
-      }, batch.id);
-      if (success) {
-        setDescUpdatedBatches(prev => new Set(prev).add(batch.id));
-      }
-    } finally {
-      setUpdatingDescBatches(prev => {
-        const n = new Set(prev);
-        n.delete(batch.id);
-        return n;
-      });
-    }
-  };
 
   const handleCompareIndividual = async (sku: string) => {
     setComparingSkus(prev => new Set(prev).add(sku));
