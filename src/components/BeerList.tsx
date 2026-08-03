@@ -71,11 +71,8 @@ export function BeerList({
   const [searchTerm, setSearchTerm] = useState('');
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
-  const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
-  const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
+  const [descUpdatedBatches] = useState<Set<string>>(new Set());
   const [validadeFilter, setValidadeFilter] = useState<'all' | 'sent' | 'not_sent'>('all');
-  const [suspendedDialogOpen, setSuspendedDialogOpen] = useState(false);
-  const [stockSuspendedDialogOpen, setStockSuspendedDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
