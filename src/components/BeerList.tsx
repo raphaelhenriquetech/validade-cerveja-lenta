@@ -75,6 +75,7 @@ export function BeerList({
   const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
   const [validadeFilter, setValidadeFilter] = useState<'all' | 'sent' | 'not_sent'>('all');
   const [suspendedDialogOpen, setSuspendedDialogOpen] = useState(false);
+  const [stockSuspendedDialogOpen, setStockSuspendedDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -173,10 +174,9 @@ export function BeerList({
     return stockMap;
   }, [batches]);
 
-  const handleSyncToTiny = async (batch: BeerBatch) => {
-    if (onSyncToTiny && batch.sku) {
-      await onSyncToTiny(batch.sku, { beer_name: batch.beer_name, lot: batch.lot });
-    }
+  // SUSPENSO: envio de estoque para o Tiny ERP desativado temporariamente
+  const handleSyncToTiny = async (_batch: BeerBatch) => {
+    setStockSuspendedDialogOpen(true);
   };
 
   const handleUpdateDescription = async (batch: BeerBatch) => {
@@ -490,14 +490,13 @@ export function BeerList({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-9 w-9 p-0"
-                                  onClick={() => handleSyncToTiny(batch)}
-                                  disabled={!batch.sku || isSyncing}
+                                  className="h-9 w-9 p-0 opacity-60 cursor-not-allowed"
+                                  onClick={() => setStockSuspendedDialogOpen(true)}
                                 >
-                                  <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+                                  <RefreshCw className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Sincronizar Tiny</TooltipContent>
+                              <TooltipContent>Recurso suspenso — em análise</TooltipContent>
                             </Tooltip>
 
                             {/* Compare Stock button */}
@@ -813,27 +812,14 @@ export function BeerList({
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <button 
-                                        className={cn(
-                                          "transition-colors",
-                                          batch.sku 
-                                            ? "text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" 
-                                            : "text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                                        )}
-                                        onClick={() => handleSyncToTiny(batch)}
-                                        disabled={!batch.sku || isSyncing}
+                                        className="transition-colors text-gray-400 dark:text-gray-500 opacity-60 cursor-not-allowed"
+                                        onClick={() => setStockSuspendedDialogOpen(true)}
                                       >
-                                        <RefreshCw className={cn(
-                                          "h-5 w-5",
-                                          isSyncing && "animate-spin"
-                                        )} />
+                                        <RefreshCw className="h-5 w-5" />
                                       </button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      {batch.sku 
-                                        ? isSyncing 
-                                          ? 'Sincronizando...' 
-                                          : 'Sincronizar estoque com Tiny'
-                                        : 'Adicione um SKU para sincronizar'}
+                                      Recurso suspenso — em análise
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
@@ -1103,6 +1089,25 @@ export function BeerList({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setSuspendedDialogOpen(false)}>
+              Entendi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={stockSuspendedDialogOpen} onOpenChange={setStockSuspendedDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Recurso temporariamente suspenso</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                O envio de estoque para o Tiny ERP está <strong>suspenso</strong> e em análise pela equipe técnica da <strong>Cerveja Lenta Tech</strong>. O sistema segue apenas para consulta.
+              </span>
+              <span className="block">Agradecemos a compreensão.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setStockSuspendedDialogOpen(false)}>
               Entendi
             </AlertDialogAction>
           </AlertDialogFooter>
