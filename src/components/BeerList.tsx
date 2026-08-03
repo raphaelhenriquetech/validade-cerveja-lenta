@@ -490,14 +490,13 @@ export function BeerList({
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-9 w-9 p-0"
-                                  onClick={() => handleSyncToTiny(batch)}
-                                  disabled={!batch.sku || isSyncing}
+                                  className="h-9 w-9 p-0 opacity-60 cursor-not-allowed"
+                                  onClick={() => setStockSuspendedDialogOpen(true)}
                                 >
-                                  <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
+                                  <RefreshCw className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Sincronizar Tiny</TooltipContent>
+                              <TooltipContent>Recurso suspenso — em análise</TooltipContent>
                             </Tooltip>
 
                             {/* Compare Stock button */}
