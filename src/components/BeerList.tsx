@@ -807,23 +807,6 @@ export function BeerList({
                                   <Pencil className="h-5 w-5" />
                                 </button>
 
-                                {/* Sync to Tiny button */}
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button 
-                                        className="transition-colors text-gray-400 dark:text-gray-500 opacity-60 cursor-not-allowed"
-                                        onClick={() => setStockSuspendedDialogOpen(true)}
-                                      >
-                                        <RefreshCw className="h-5 w-5" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      Recurso suspenso — em análise
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-
                                 {/* Compare Stock button */}
                                 <TooltipProvider>
                                   <Tooltip>
