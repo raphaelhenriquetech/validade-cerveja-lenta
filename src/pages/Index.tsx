@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const Index = () => {
   const {
     batches, archivedBatches, loading, addBatch, deleteBatch, updateBatch,
-    toggleOlistSync, toggleArchive, syncStockToTiny, syncingSkus, updateTinyDescription,
+    toggleOlistSync, toggleArchive,
   } = useBeers();
   const [filter, setFilter] = useState('all');
 
