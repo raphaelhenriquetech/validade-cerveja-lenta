@@ -520,35 +520,6 @@ export function BeerList({
                                 {batch.sku ? 'Comparar estoque com Tiny' : 'Adicione um SKU para comparar'}
                               </TooltipContent>
                             </Tooltip>
-
-                            {/* Update Tiny Description with expiry */}
-                            {onUpdateTinyDescription && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="relative">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 opacity-60"
-                                      onClick={() => setSuspendedDialogOpen(true)}
-                                    >
-                                      <CalendarClock className="h-4 w-4" />
-                                    </Button>
-                                    {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
-                                      <span
-                                        className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm"
-                                        title={batch.tiny_description_updated_at ? `Enviado em ${format(parseISO(batch.tiny_description_updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : 'Enviado'}
-                                      >
-                                        OK
-                                      </span>
-                                    )}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Recurso suspenso — em análise
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
                           </>
                         )}
                       </div>
