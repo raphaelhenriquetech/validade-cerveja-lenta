@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ExpirationBadge, getDaysUntilExpiration } from './ExpirationBadge';
-import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, RefreshCw, Scale, Loader2, AlertTriangle, CalendarClock } from 'lucide-react';
+import { Trash2, Beer as BeerIcon, Package, Pencil, Search, X, Archive, ArchiveRestore, Scale, Loader2, AlertTriangle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useMemo, useState } from 'react';
@@ -43,9 +43,6 @@ interface BeerListProps {
   onUpdateBatch: (batchId: string, updates: Partial<BeerBatch>, oldBatch?: BeerBatch) => void;
   onToggleOlistSync?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
   onToggleArchive?: (batchId: string, currentState: boolean, batchInfo: { beer_name: string; lot: string }) => void;
-  onSyncToTiny?: (sku: string, batchInfo: { beer_name: string; lot: string }) => Promise<boolean>;
-  onUpdateTinyDescription?: (sku: string, expirationDate: string, batchInfo: { beer_name: string; lot: string }, batchId?: string) => Promise<boolean>;
-  syncingSkus?: Set<string>;
   filter: string;
   isArchivedView?: boolean;
 }
@@ -56,9 +53,6 @@ export function BeerList({
   onUpdateBatch, 
   onToggleOlistSync, 
   onToggleArchive,
-  onSyncToTiny,
-  onUpdateTinyDescription,
-  syncingSkus = new Set(),
   filter,
   isArchivedView = false
 }: BeerListProps) {
@@ -71,11 +65,8 @@ export function BeerList({
   const [searchTerm, setSearchTerm] = useState('');
   const [tinyStocks, setTinyStocks] = useState<Record<string, number | null>>({});
   const [comparingSkus, setComparingSkus] = useState<Set<string>>(new Set());
-  const [updatingDescBatches, setUpdatingDescBatches] = useState<Set<string>>(new Set());
-  const [descUpdatedBatches, setDescUpdatedBatches] = useState<Set<string>>(new Set());
+  const [descUpdatedBatches] = useState<Set<string>>(new Set());
   const [validadeFilter, setValidadeFilter] = useState<'all' | 'sent' | 'not_sent'>('all');
-  const [suspendedDialogOpen, setSuspendedDialogOpen] = useState(false);
-  const [stockSuspendedDialogOpen, setStockSuspendedDialogOpen] = useState(false);
   const isMobile = useIsMobile();
   const { toast } = useToast();
 
@@ -174,30 +165,7 @@ export function BeerList({
     return stockMap;
   }, [batches]);
 
-  // SUSPENSO: envio de estoque para o Tiny ERP desativado temporariamente
-  const handleSyncToTiny = async (_batch: BeerBatch) => {
-    setStockSuspendedDialogOpen(true);
-  };
 
-  const handleUpdateDescription = async (batch: BeerBatch) => {
-    if (!onUpdateTinyDescription || !batch.sku) return;
-    setUpdatingDescBatches(prev => new Set(prev).add(batch.id));
-    try {
-      const success = await onUpdateTinyDescription(batch.sku, batch.expiration_date, {
-        beer_name: batch.beer_name,
-        lot: batch.lot,
-      }, batch.id);
-      if (success) {
-        setDescUpdatedBatches(prev => new Set(prev).add(batch.id));
-      }
-    } finally {
-      setUpdatingDescBatches(prev => {
-        const n = new Set(prev);
-        n.delete(batch.id);
-        return n;
-      });
-    }
-  };
 
   const handleCompareIndividual = async (sku: string) => {
     setComparingSkus(prev => new Set(prev).add(sku));
@@ -368,7 +336,6 @@ export function BeerList({
             {sortedBatches.map((batch) => {
               const days = getDaysUntilExpiration(batch.expiration_date);
               const isUrgent = days <= 7 && !isArchivedView;
-              const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
               
               return (
                 <div 
@@ -485,20 +452,6 @@ export function BeerList({
                               <TooltipContent>Editar</TooltipContent>
                             </Tooltip>
 
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-9 w-9 p-0 opacity-60 cursor-not-allowed"
-                                  onClick={() => setStockSuspendedDialogOpen(true)}
-                                >
-                                  <RefreshCw className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Recurso suspenso — em análise</TooltipContent>
-                            </Tooltip>
-
                             {/* Compare Stock button */}
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -520,35 +473,6 @@ export function BeerList({
                                 {batch.sku ? 'Comparar estoque com Tiny' : 'Adicione um SKU para comparar'}
                               </TooltipContent>
                             </Tooltip>
-
-                            {/* Update Tiny Description with expiry */}
-                            {onUpdateTinyDescription && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="relative">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-9 w-9 p-0 text-purple-600 hover:text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 opacity-60"
-                                      onClick={() => setSuspendedDialogOpen(true)}
-                                    >
-                                      <CalendarClock className="h-4 w-4" />
-                                    </Button>
-                                    {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
-                                      <span
-                                        className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm"
-                                        title={batch.tiny_description_updated_at ? `Enviado em ${format(parseISO(batch.tiny_description_updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : 'Enviado'}
-                                      >
-                                        OK
-                                      </span>
-                                    )}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  Recurso suspenso — em análise
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
                           </>
                         )}
                       </div>
@@ -680,7 +604,6 @@ export function BeerList({
                   beerBatches.map((batch, index) => {
                     const days = getDaysUntilExpiration(batch.expiration_date);
                     const isUrgent = days <= 7 && !isArchivedView;
-                    const isSyncing = batch.sku ? syncingSkus.has(batch.sku) : false;
                     
                     return (
                       <TableRow 
@@ -807,23 +730,6 @@ export function BeerList({
                                   <Pencil className="h-5 w-5" />
                                 </button>
 
-                                {/* Sync to Tiny button */}
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button 
-                                        className="transition-colors text-gray-400 dark:text-gray-500 opacity-60 cursor-not-allowed"
-                                        onClick={() => setStockSuspendedDialogOpen(true)}
-                                      >
-                                        <RefreshCw className="h-5 w-5" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      Recurso suspenso — em análise
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-
                                 {/* Compare Stock button */}
                                 <TooltipProvider>
                                   <Tooltip>
@@ -854,35 +760,6 @@ export function BeerList({
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
-
-                                {/* Update Tiny Description with expiry */}
-                                {onUpdateTinyDescription && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <div className="relative inline-flex">
-                                          <button
-                                            className="transition-colors text-purple-500 dark:text-purple-400 opacity-60 cursor-not-allowed"
-                                            onClick={() => setSuspendedDialogOpen(true)}
-                                          >
-                                            <CalendarClock className="h-5 w-5" />
-                                          </button>
-                                          {(descUpdatedBatches.has(batch.id) || !!batch.tiny_description_updated_at) && (
-                                            <span
-                                              className="absolute -top-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center text-[8px] text-white font-bold border border-white dark:border-zinc-900 shadow-sm"
-                                              title={batch.tiny_description_updated_at ? `Enviado em ${format(parseISO(batch.tiny_description_updated_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : 'Enviado'}
-                                            >
-                                              OK
-                                            </span>
-                                          )}
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        Recurso suspenso — em análise
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
                               </>
                             )}
                             
@@ -1075,44 +952,6 @@ export function BeerList({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={suspendedDialogOpen} onOpenChange={setSuspendedDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Recurso temporariamente suspenso</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <span className="block">
-                O envio de validade para o Tiny ERP está <strong>suspenso</strong> e em análise pela equipe técnica da <strong>Cerveja Lenta Tech</strong> para uma nova atualização.
-              </span>
-              <span className="block">Agradecemos a compreensão.</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setSuspendedDialogOpen(false)}>
-              Entendi
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={stockSuspendedDialogOpen} onOpenChange={setStockSuspendedDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Recurso temporariamente suspenso</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <span className="block">
-                O envio de estoque para o Tiny ERP está <strong>suspenso</strong> e em análise pela equipe técnica da <strong>Cerveja Lenta Tech</strong>. O sistema segue apenas para consulta.
-              </span>
-              <span className="block">Agradecemos a compreensão.</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setStockSuspendedDialogOpen(false)}>
-              Entendi
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
