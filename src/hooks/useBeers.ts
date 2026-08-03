@@ -102,7 +102,16 @@ export function useBeers() {
   }, []);
 
   // Sync stock to Tiny ERP
+  // SUSPENSO: nenhuma alteração de estoque é enviada ao Tiny ERP.
+  // Para reativar, troque o flag abaixo para true.
+  const TINY_STOCK_SYNC_ENABLED = false;
+
   const syncStockToTiny = useCallback(async (sku: string, batchInfo?: { beer_name: string; lot: string }) => {
+    if (!TINY_STOCK_SYNC_ENABLED) {
+      console.log('[syncStockToTiny] Sincronização de estoque com o Tiny está suspensa (modo somente consulta).');
+      return false;
+    }
+
     if (!sku) {
       toast({
         title: 'SKU não informado',
@@ -113,6 +122,7 @@ export function useBeers() {
     }
 
     setSyncingSkus(prev => new Set(prev).add(sku));
+
 
     try {
       // Get fresh batch data
