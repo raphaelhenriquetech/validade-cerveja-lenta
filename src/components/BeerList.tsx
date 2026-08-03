@@ -1094,6 +1094,25 @@ export function BeerList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={stockSuspendedDialogOpen} onOpenChange={setStockSuspendedDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Recurso temporariamente suspenso</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">
+                O envio de estoque para o Tiny ERP está <strong>suspenso</strong> e em análise pela equipe técnica da <strong>Cerveja Lenta Tech</strong>. O sistema segue apenas para consulta.
+              </span>
+              <span className="block">Agradecemos a compreensão.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setStockSuspendedDialogOpen(false)}>
+              Entendi
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
