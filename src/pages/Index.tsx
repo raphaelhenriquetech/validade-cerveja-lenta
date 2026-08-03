@@ -69,9 +69,6 @@ const Index = () => {
                   onUpdateBatch={updateBatch}
                   onToggleOlistSync={toggleOlistSync}
                   onToggleArchive={toggleArchive}
-                  onSyncToTiny={syncStockToTiny}
-                  onUpdateTinyDescription={updateTinyDescription}
-                  syncingSkus={syncingSkus}
                   filter={filter}
                 />
               </TabsContent>
