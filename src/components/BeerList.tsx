@@ -485,20 +485,6 @@ export function BeerList({
                               <TooltipContent>Editar</TooltipContent>
                             </Tooltip>
 
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-9 w-9 p-0 opacity-60 cursor-not-allowed"
-                                  onClick={() => setStockSuspendedDialogOpen(true)}
-                                >
-                                  <RefreshCw className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Recurso suspenso — em análise</TooltipContent>
-                            </Tooltip>
-
                             {/* Compare Stock button */}
                             <Tooltip>
                               <TooltipTrigger asChild>
