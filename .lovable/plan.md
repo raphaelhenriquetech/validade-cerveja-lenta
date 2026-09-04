@@ -1,21 +1,41 @@
-## Objetivo
-Colocar o sistema em **modo somente consulta** em relação ao Tiny ERP: nenhum comando de alteração de estoque será enviado via API. Leituras (comparativo, imagens, listagem de produtos) continuam funcionando normalmente.
+# Multiempresa no StockBrew (Na Caixa Cestaria)
 
-## O que será suspenso
-1. **Sincronização automática** ao adicionar, editar, arquivar/desarquivar e excluir lotes (`syncStockToTiny` em `src/hooks/useBeers.ts`) — as chamadas passam a não executar nada.
-2. **Botão manual "Sincronizar estoque"** na lista (desktop e mobile em `src/components/BeerList.tsx`) — continua visível, mas com aparência desabilitada; ao clicar abre um popup:
-   > **Recurso temporariamente suspenso**
-   > O envio de estoque para o Tiny ERP está suspenso e em análise pela equipe técnica da Cerveja Lenta Tech.
-   Botão único "Entendi".
-3. Botão de envio de validade: já está suspenso — segue igual.
+Objetivo: usar o mesmo sistema com uma segunda empresa (Na Caixa Cestaria) com dados totalmente isolados, sem alterar nada do que já funciona para a Cerveja Lenta, e com caminho pronto para cadastrar novas empresas depois.
 
-## O que NÃO muda
-- Nenhuma alteração nas edge functions (`sync-tiny-stock`, `update-tiny-description` permanecem no projeto, apenas deixam de ser chamadas).
-- Comparativo de estoque (`compare-tiny-stock`), imagens do Tiny e página de produtos: intactos (são apenas leitura).
-- Cadastro, edição, arquivamento e exclusão de lotes no sistema local: continuam funcionando normalmente.
-- Relatórios PDF, e-mail, WhatsApp e histórico de atividades: intactos.
+## Como vai funcionar
+
+- Cada empresa tem nome, logo e cor de destaque próprios.
+- Cada usuário é vinculado a uma empresa. Ao logar, ele só vê os lotes, o dashboard, os relatórios e o histórico da própria empresa.
+- Os 303 lotes existentes passam a pertencer à Cerveja Lenta. Nada é apagado, movido ou renomeado.
+- Após o login, o topo do sistema mostra o logo e o nome da empresa do usuário, e o avatar do perfil usa esse mesmo logo.
+- A nova empresa usa apenas o controle de lotes e validades (sem Tiny ERP, sem e-mail e sem WhatsApp) — as integrações continuam exclusivas da Cerveja Lenta.
+- Para adicionar uma terceira empresa no futuro: cadastrar a empresa (nome + logo) e vincular os usuários dela. Nenhuma mudança de código será necessária.
+
+## O que não muda
+
+- Nenhuma tela, regra ou automação atual é alterada em comportamento.
+- O relatório diário automático (8h e 15h) e a função pública `vencimentos` consumida pelo n8n continuam retornando exatamente os dados da Cerveja Lenta.
+- Os botões suspensos de estoque/validade permanecem como estão.
+- Nenhuma tabela de configuração de integrações (Tiny, e-mail, WhatsApp, J3) é modificada.
 
 ## Detalhes técnicos
-- Em `useBeers.ts`: adicionar um flag `TINY_STOCK_SYNC_ENABLED = false` no topo; `syncStockToTiny` retorna imediatamente quando desligado (sem invoke, sem toast de erro). Os pontos de chamada permanecem no código.
-- Em `BeerList.tsx`: novo estado `stockSuspendedDialogOpen`; o `onClick` dos botões de sync (desktop e mobile) passa a abrir o diálogo; estilo `opacity-60 cursor-not-allowed` e tooltip "Recurso suspenso — em análise".
-- Reativação futura: trocar o flag para `true` e restaurar o `onClick` — sem migrações nem redeploy.
+
+Banco (uma migração aditiva):
+- `companies`: `id`, `name`, `slug`, `logo_url`, `accent_color`, timestamps. Insere Cerveja Lenta (empresa padrão) e Na Caixa Cestaria.
+- `company_members`: `user_id`, `company_id`, `role`, único por par. Define o acesso.
+- Função `has_company_access(_user_id, _company_id)` e `current_company_id(_user_id)` como `security definer` / `stable`, evitando recursão em RLS.
+- `company_id uuid` adicionado a `beer_batches` e `activity_logs`, com backfill para a Cerveja Lenta e depois `NOT NULL` + default via trigger a partir da empresa do usuário autenticado.
+- RLS atualizada nessas duas tabelas: leitura/escrita apenas quando `has_company_access(auth.uid(), company_id)`. GRANTs mantidos para `authenticated` e `service_role`.
+- `companies`: leitura para membros; `company_members`: cada usuário lê seus próprios vínculos.
+
+Funções de servidor:
+- `vencimentos` e `send-expiration-report` / `send-whatsapp-report` passam a filtrar explicitamente pelo `company_id` da Cerveja Lenta, garantindo saída idêntica à atual.
+
+Frontend:
+- Novo `useCompany()` (contexto) que carrega a empresa do usuário logado a partir de `company_members` e expõe `companyId`, `name`, `logoUrl`.
+- `useBeers` e `useActivityLogs` passam a enviar `company_id` nos inserts e a filtrar por ele nas consultas (a RLS já garante o isolamento; o filtro deixa as queries explícitas).
+- `AppLayout`: logo + nome da empresa no topo (desktop e mobile) e logo no avatar do menu de perfil; fallback para o logo StockBrew quando a empresa não tem imagem.
+- Logo da Na Caixa Cestaria publicado como asset (`lovable-assets`) e gravado em `companies.logo_url`.
+- Se um usuário pertencer a mais de uma empresa, o menu de perfil mostra um seletor de empresa; com uma só empresa, nada aparece.
+
+Após a migração, criar o usuário da Na Caixa Cestaria e vinculá-lo à nova empresa.
