@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCompany, resolveActiveCompanyId } from '@/hooks/useCompany';
 
 export interface BeerBatch {
   id: string;
@@ -25,7 +26,10 @@ const logActivity = async (
   newValues?: Record<string, any> | null
 ) => {
   try {
+    const companyId = await resolveActiveCompanyId();
+    if (!companyId) return;
     await supabase.from('activity_logs').insert({
+      company_id: companyId,
       action_type: actionType,
       entity_type: entityType,
       entity_id: entityId,
@@ -44,6 +48,7 @@ export function useBeers() {
   const [loading, setLoading] = useState(true);
   const [syncingSkus, setSyncingSkus] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const { companyId } = useCompany();
 
   const fetchBatches = useCallback(async () => {
     try {
@@ -189,7 +194,9 @@ export function useBeers() {
           quantity,
           expiration_date: expirationDate,
           sku: sku || null,
+          company_id: companyId ?? (await resolveActiveCompanyId())!,
         });
+
 
       if (error) throw error;
 

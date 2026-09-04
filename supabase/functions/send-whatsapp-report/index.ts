@@ -195,6 +195,7 @@ serve(async (req) => {
     const { data: batches, error: batchesError } = await supabase
       .from("beer_batches")
       .select("*")
+      .eq("company_id", "9139bec3-dc48-4c00-aec8-3e1235d3219b")
       .order("expiration_date", { ascending: true });
 
     if (batchesError) {

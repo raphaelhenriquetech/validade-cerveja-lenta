@@ -5,6 +5,7 @@ import stockbrewLogoDark from "@/assets/stockbrew-logo-dark.png";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/hooks/useCompany";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ export default function AppLayout() {
   const { toast } = useToast();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { resolvedTheme } = useTheme();
+  const { company, companies, selectCompany } = useCompany();
   const logoSrc = resolvedTheme === "dark" ? stockbrewLogoDark : stockbrewLogoLight;
 
   const handleLogout = async () => {
@@ -44,13 +46,19 @@ export default function AppLayout() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="max-w-screen-2xl mx-auto flex items-center gap-4 px-4 md:px-6 h-16">
           {/* Brand */}
-          <NavLink to="/" className="flex items-center shrink-0 group" aria-label="Stock Brew">
+          <NavLink to="/" className="flex items-center gap-3 shrink-0 group" aria-label={company?.name ?? "Stock Brew"}>
             <img
-              src={logoSrc}
-              alt="Stock Brew"
-              className="h-9 md:h-10 w-auto transition-transform group-hover:scale-[1.03]"
+              src={company?.logo_url ?? logoSrc}
+              alt={company?.name ?? "Stock Brew"}
+              className="h-9 md:h-10 w-auto max-w-[160px] object-contain transition-transform group-hover:scale-[1.03]"
             />
+            {company?.logo_url && (
+              <span className="hidden lg:inline text-sm font-semibold text-foreground truncate max-w-[180px]">
+                {company.name}
+              </span>
+            )}
           </NavLink>
+
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 ml-4">
@@ -82,14 +90,36 @@ export default function AppLayout() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <div className="h-7 w-7 rounded-full bg-brand-purple flex items-center justify-center text-[11px] font-bold text-brand-purple-foreground shadow-sm">
-                    {user?.email?.[0]?.toUpperCase() ?? "U"}
+                  <div className="h-7 w-7 rounded-full bg-brand-purple flex items-center justify-center text-[11px] font-bold text-brand-purple-foreground shadow-sm overflow-hidden">
+                    {company?.logo_url ? (
+                      <img src={company.logo_url} alt={company.name} className="h-full w-full object-contain bg-background" />
+                    ) : (
+                      user?.email?.[0]?.toUpperCase() ?? "U"
+                    )}
                   </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
+                {company && (
+                  <div className="px-2 pb-1 text-xs text-muted-foreground truncate">{company.name}</div>
+                )}
                 <DropdownMenuSeparator />
+                {companies.length > 1 && (
+                  <>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Empresa</DropdownMenuLabel>
+                    {companies.map((c) => (
+                      <DropdownMenuItem
+                        key={c.id}
+                        onClick={() => selectCompany(c.id)}
+                        className={cn("gap-2", c.id === company?.id && "text-brand-purple font-medium")}
+                      >
+                        {c.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" /> Sair
                 </DropdownMenuItem>
@@ -132,7 +162,9 @@ export default function AppLayout() {
                 );
               })}
               <div className="mt-2 pt-2 border-t border-border/60 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {company ? `${company.name} · ${user?.email}` : user?.email}
+                </span>
                 <div className="flex items-center gap-1">
                   <ThemeToggle />
                   <button
