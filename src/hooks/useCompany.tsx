@@ -66,6 +66,10 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     return companies.find((c) => c.id === selectedId) ?? companies[0];
   }, [companies, selectedId]);
 
+  useEffect(() => {
+    if (company) localStorage.setItem(STORAGE_KEY, company.id);
+  }, [company]);
+
   const selectCompany = useCallback((id: string) => {
     localStorage.setItem(STORAGE_KEY, id);
     setSelectedId(id);
@@ -87,3 +91,17 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useCompany = () => useContext(CompanyContext);
+
+/** Resolve a empresa ativa fora de componentes React (helpers, logs). */
+export async function resolveActiveCompanyId(): Promise<string | null> {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) return stored;
+  const { data } = await supabase
+    .from("companies")
+    .select("id")
+    .order("name", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (data?.id) localStorage.setItem(STORAGE_KEY, data.id);
+  return data?.id ?? null;
+}

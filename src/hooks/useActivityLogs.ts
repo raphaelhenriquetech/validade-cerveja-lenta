@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
+import { resolveActiveCompanyId } from '@/hooks/useCompany';
 
 export interface ActivityLog {
   id: string;
@@ -47,9 +48,12 @@ export function useActivityLogs() {
     newValues?: Record<string, any> | null
   ) => {
     try {
+      const companyId = await resolveActiveCompanyId();
+      if (!companyId) return;
       const { error } = await supabase
         .from('activity_logs')
         .insert({
+          company_id: companyId,
           action_type: actionType,
           entity_type: entityType,
           entity_id: entityId,
