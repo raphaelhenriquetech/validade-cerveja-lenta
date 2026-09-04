@@ -17,6 +17,7 @@ export type Database = {
       activity_logs: {
         Row: {
           action_type: string
+          company_id: string
           created_at: string | null
           description: string
           entity_id: string | null
@@ -27,6 +28,7 @@ export type Database = {
         }
         Insert: {
           action_type: string
+          company_id: string
           created_at?: string | null
           description: string
           entity_id?: string | null
@@ -37,6 +39,7 @@ export type Database = {
         }
         Update: {
           action_type?: string
+          company_id?: string
           created_at?: string | null
           description?: string
           entity_id?: string | null
@@ -45,13 +48,22 @@ export type Database = {
           new_values?: Json | null
           old_values?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       beer_batches: {
         Row: {
           archived: boolean | null
           archived_at: string | null
           beer_name: string
+          company_id: string
           created_at: string | null
           expiration_date: string
           id: string
@@ -66,6 +78,7 @@ export type Database = {
           archived?: boolean | null
           archived_at?: string | null
           beer_name: string
+          company_id: string
           created_at?: string | null
           expiration_date: string
           id?: string
@@ -80,6 +93,7 @@ export type Database = {
           archived?: boolean | null
           archived_at?: string | null
           beer_name?: string
+          company_id?: string
           created_at?: string | null
           expiration_date?: string
           id?: string
@@ -90,7 +104,80 @@ export type Database = {
           sku?: string | null
           tiny_description_updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "beer_batches_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          accent_color: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
         Relationships: []
+      }
+      company_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_settings: {
         Row: {
@@ -304,7 +391,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_company_id: { Args: { _user_id: string }; Returns: string }
+      has_company_access: {
+        Args: { _company_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
