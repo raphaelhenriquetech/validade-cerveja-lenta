@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCompany } from '@/hooks/useCompany';
 
 export interface BeerBatch {
   id: string;
@@ -44,6 +45,7 @@ export function useBeers() {
   const [loading, setLoading] = useState(true);
   const [syncingSkus, setSyncingSkus] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const { companyId } = useCompany();
 
   const fetchBatches = useCallback(async () => {
     try {
