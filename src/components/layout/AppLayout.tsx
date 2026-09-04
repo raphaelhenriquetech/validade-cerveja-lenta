@@ -5,6 +5,7 @@ import stockbrewLogoDark from "@/assets/stockbrew-logo-dark.png";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useCompany } from "@/hooks/useCompany";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ export default function AppLayout() {
   const { toast } = useToast();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { resolvedTheme } = useTheme();
+  const { company, companies, selectCompany } = useCompany();
   const logoSrc = resolvedTheme === "dark" ? stockbrewLogoDark : stockbrewLogoLight;
 
   const handleLogout = async () => {
@@ -88,14 +90,36 @@ export default function AppLayout() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <div className="h-7 w-7 rounded-full bg-brand-purple flex items-center justify-center text-[11px] font-bold text-brand-purple-foreground shadow-sm">
-                    {user?.email?.[0]?.toUpperCase() ?? "U"}
+                  <div className="h-7 w-7 rounded-full bg-brand-purple flex items-center justify-center text-[11px] font-bold text-brand-purple-foreground shadow-sm overflow-hidden">
+                    {company?.logo_url ? (
+                      <img src={company.logo_url} alt={company.name} className="h-full w-full object-contain bg-background" />
+                    ) : (
+                      user?.email?.[0]?.toUpperCase() ?? "U"
+                    )}
                   </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
+                {company && (
+                  <div className="px-2 pb-1 text-xs text-muted-foreground truncate">{company.name}</div>
+                )}
                 <DropdownMenuSeparator />
+                {companies.length > 1 && (
+                  <>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Empresa</DropdownMenuLabel>
+                    {companies.map((c) => (
+                      <DropdownMenuItem
+                        key={c.id}
+                        onClick={() => selectCompany(c.id)}
+                        className={cn("gap-2", c.id === company?.id && "text-brand-purple font-medium")}
+                      >
+                        {c.name}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" /> Sair
                 </DropdownMenuItem>
@@ -138,7 +162,9 @@ export default function AppLayout() {
                 );
               })}
               <div className="mt-2 pt-2 border-t border-border/60 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
+                <span className="text-xs text-muted-foreground truncate">
+                  {company ? `${company.name} · ${user?.email}` : user?.email}
+                </span>
                 <div className="flex items-center gap-1">
                   <ThemeToggle />
                   <button
