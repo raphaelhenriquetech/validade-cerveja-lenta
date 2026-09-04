@@ -44,13 +44,19 @@ export default function AppLayout() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="max-w-screen-2xl mx-auto flex items-center gap-4 px-4 md:px-6 h-16">
           {/* Brand */}
-          <NavLink to="/" className="flex items-center shrink-0 group" aria-label="Stock Brew">
+          <NavLink to="/" className="flex items-center gap-3 shrink-0 group" aria-label={company?.name ?? "Stock Brew"}>
             <img
-              src={logoSrc}
-              alt="Stock Brew"
-              className="h-9 md:h-10 w-auto transition-transform group-hover:scale-[1.03]"
+              src={company?.logo_url ?? logoSrc}
+              alt={company?.name ?? "Stock Brew"}
+              className="h-9 md:h-10 w-auto max-w-[160px] object-contain transition-transform group-hover:scale-[1.03]"
             />
+            {company?.logo_url && (
+              <span className="hidden lg:inline text-sm font-semibold text-foreground truncate max-w-[180px]">
+                {company.name}
+              </span>
+            )}
           </NavLink>
+
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 ml-4">
