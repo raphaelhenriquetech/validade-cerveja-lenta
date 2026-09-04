@@ -47,7 +47,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/install" element={<Install />} />
             <Route path="/landing" element={<Landing />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute><CompanyProvider><AppLayout /></CompanyProvider></ProtectedRoute>}>
               <Route path="/" element={<Index />} />
               <Route path="/configuracoes" element={<Settings />} />
               <Route path="/produtos-tiny" element={<TinyProducts />} />
