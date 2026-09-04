@@ -189,7 +189,9 @@ export function useBeers() {
           quantity,
           expiration_date: expirationDate,
           sku: sku || null,
+          ...(companyId ? { company_id: companyId } : {}),
         });
+
 
       if (error) throw error;
 
