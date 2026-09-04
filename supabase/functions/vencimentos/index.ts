@@ -58,6 +58,7 @@ serve(async (req) => {
       .from("beer_batches")
       .select("beer_name, sku, lot, quantity, expiration_date")
       .eq("archived", false)
+      .eq("company_id", "9139bec3-dc48-4c00-aec8-3e1235d3219b")
       .gte("expiration_date", todayStr)
       .order("expiration_date", { ascending: true });
 
