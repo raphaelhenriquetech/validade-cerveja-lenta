@@ -14,6 +14,8 @@ import TinyProducts from "./pages/TinyProducts";
 import Install from "./pages/Install";
 import Landing from "./pages/Landing";
 import AppLayout from "./components/layout/AppLayout";
+import { CompanyProvider } from "@/hooks/useCompany";
+
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
